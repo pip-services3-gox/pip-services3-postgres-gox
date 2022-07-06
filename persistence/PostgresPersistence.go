@@ -8,7 +8,6 @@ import (
 	"math/rand"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -87,6 +86,8 @@ type PostgresPersistence[T any] struct {
 	//The PostgreSQL table object.
 	TableName   string
 	MaxPageSize int
+
+	isTerminated chan struct{}
 }
 
 // InheritPostgresPersistence creates a new instance of the persistence component.
@@ -112,6 +113,7 @@ func InheritPostgresPersistence[T any](overrides IPostgresPersistenceOverrides[T
 		TableName:        tableName,
 		JsonConvertor:    cconv.NewDefaultCustomTypeJsonConvertor[T](),
 		JsonMapConvertor: cconv.NewDefaultCustomTypeJsonConvertor[map[string]any](),
+		isTerminated:     make(chan struct{}),
 	}
 
 	c.DependencyResolver = cref.NewDependencyResolver()
@@ -190,9 +192,6 @@ func (c *PostgresPersistence[T]) EnsureIndex(name string, keys map[string]string
 	}
 
 	indexName := c.QuoteIdentifier(name)
-	if len(c.SchemaName) > 0 {
-		indexName = c.QuoteIdentifier(c.SchemaName) + "." + indexName
-	}
 
 	builder += " INDEX IF NOT EXISTS " + indexName + " ON " + c.QuotedTableName()
 
@@ -306,6 +305,20 @@ func (c *PostgresPersistence[T]) IsOpen() bool {
 	return c.opened
 }
 
+// IsTerminated checks if the wee need to terminate process before close component.
+//	Returns: true if you need terminate your processes.
+func (c *PostgresPersistence[T]) IsTerminated() bool {
+	select {
+	case _, ok := <-c.isTerminated:
+		if !ok {
+			return true
+		}
+	default:
+		return false
+	}
+	return false
+}
+
 // Open the component.
 //	Parameters:
 //		- ctx context.Context
@@ -372,6 +385,7 @@ func (c *PostgresPersistence[T]) Close(ctx context.Context, correlationId string
 		return cerr.NewInvalidStateError(correlationId, "NO_CONNECTION", "Postgres connection is missing")
 	}
 
+	close(c.isTerminated)
 	if c.localConnection {
 		err = c.Connection.Close(ctx, correlationId)
 	}
@@ -411,41 +425,47 @@ func (c *PostgresPersistence[T]) CreateSchema(ctx context.Context, correlationId
 		return nil
 	}
 
-	// Check if table exist to determine weither to auto create objects
-	query := "SELECT to_regclass('" + c.QuotedTableName() + "')"
-	qResult, qErr := c.Client.Query(ctx, query)
-	if qErr != nil {
-		return qErr
+	exists, err := c.checkTableExists(ctx)
+	if err != nil {
+		return err
 	}
-	defer qResult.Close()
+	if exists {
+		return nil
+	}
+	c.Logger.Debug(ctx, correlationId, "Table "+c.QuotedTableName()+" does not exist. Creating database objects...")
+
+	for _, dml := range c.schemaStatements {
+		result, err := c.Client.Query(ctx, dml)
+		if err != nil {
+			c.Logger.Error(ctx, correlationId, err, "Failed to autocreate database object")
+			return err
+		}
+		result.Close()
+	}
+	return nil
+}
+
+func (c *PostgresPersistence[T]) checkTableExists(ctx context.Context) (bool, error) {
+	// Check if table exist to determine either to auto create objects
+	query := "SELECT to_regclass('" + c.QuotedTableName() + "')"
+	result, err := c.Client.Query(ctx, query)
+	if err != nil {
+		return false, err
+	}
+	defer result.Close()
+
 	// If table already exists then exit
-	if qResult != nil && qResult.Next() {
-		val, cErr := qResult.Values()
-		if cErr != nil {
-			return cErr
+	if result.Next() {
+		val, err := result.Values()
+		if err != nil {
+			return false, err
 		}
 
 		if len(val) > 0 && val[0] == c.TableName {
-			return nil
+			return true, nil
 		}
 	}
-	c.Logger.Debug(ctx, correlationId, "Table "+c.QuotedTableName()+" does not exist. Creating database objects...")
-	wg := sync.WaitGroup{}
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for _, dml := range c.schemaStatements {
-			qResult, err := c.Client.Query(ctx, dml)
-			if err != nil {
-				c.Logger.Error(ctx, correlationId, err, "Failed to autocreate database object")
-			}
-			if qResult != nil {
-				qResult.Close()
-			}
-		}
-	}()
-	wg.Wait()
-	return qResult.Err()
+	return false, nil
 }
 
 // GenerateColumns generates a list of column names to use in SQL statements like: "column1,column2,column3"
@@ -611,7 +631,7 @@ func (c *PostgresPersistence[T]) GetPageByFilter(ctx context.Context, correlatio
 	}
 
 	query += " LIMIT " + strconv.FormatInt(take, 10)
-	qResult, qErr := c.Client.Query(context.TODO(), query)
+	qResult, qErr := c.Client.Query(ctx, query)
 
 	if qErr != nil {
 		return *cdata.NewEmptyDataPage[T](), qErr
@@ -621,6 +641,10 @@ func (c *PostgresPersistence[T]) GetPageByFilter(ctx context.Context, correlatio
 
 	items := make([]T, 0, 0)
 	for qResult.Next() {
+		if c.IsTerminated() {
+			qResult.Close()
+			return *cdata.NewEmptyDataPage[T](), cerr.NewError("query terminated").WithCorrelationId(correlationId)
+		}
 		item := c.Overrides.ConvertToPublic(qResult)
 		items = append(items, item)
 	}

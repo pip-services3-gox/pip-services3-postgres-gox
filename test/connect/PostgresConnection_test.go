@@ -2,12 +2,11 @@ package test_connect
 
 import (
 	"context"
-	"os"
-	"testing"
-
 	cconf "github.com/pip-services3-gox/pip-services3-commons-gox/config"
 	conn "github.com/pip-services3-gox/pip-services3-postgres-gox/connect"
 	"github.com/stretchr/testify/assert"
+	"os"
+	"testing"
 )
 
 func TestPostgresConnection(t *testing.T) {
@@ -47,12 +46,15 @@ func TestPostgresConnection(t *testing.T) {
 		"credential.username", postgresUser,
 		"credential.password", postgresPassword,
 		"options.max_pool_size", 10,
+		"options.connect_timeout", 100,
+		"options.idle_timeout", 100,
 	)
 
 	connection = conn.NewPostgresConnection()
 	connection.Configure(context.Background(), dbConfig)
 	err := connection.Open(context.Background(), "")
 	assert.Nil(t, err)
+
 	defer connection.Close(context.Background(), "")
 
 	assert.NotNil(t, connection.GetConnection())

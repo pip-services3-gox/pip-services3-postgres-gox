@@ -2,11 +2,12 @@ package connect
 
 import (
 	"context"
+	cerr "github.com/pip-services3-gox/pip-services3-commons-gox/errors"
+	"math"
 	"time"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 	cconf "github.com/pip-services3-gox/pip-services3-commons-gox/config"
-	cerr "github.com/pip-services3-gox/pip-services3-commons-gox/errors"
 	cref "github.com/pip-services3-gox/pip-services3-commons-gox/refer"
 	clog "github.com/pip-services3-gox/pip-services3-components-gox/log"
 )
@@ -47,25 +48,29 @@ type PostgresConnection struct {
 	Connection *pgxpool.Pool
 	// The PostgreSQL database name.
 	DatabaseName string
+
+	retries int
 }
 
 const (
-	OptionsConnectTimeoutDefault = 0
-	OptionsIdleTimeoutDefault    = 10000
-	OptionsMaxPoolSizeDefault    = 3
+	DefaultConnectTimeout = 1000
+	DefaultIdleTimeout    = 10000
+	DefaultMaxPoolSize    = 3
+	DefaultRetriesCount   = 3
 )
 
 // NewPostgresConnection creates a new instance of the connection component.
 func NewPostgresConnection() *PostgresConnection {
 	c := &PostgresConnection{
 		defaultConfig: cconf.NewConfigParamsFromTuples(
-			"options.connect_timeout", OptionsConnectTimeoutDefault,
-			"options.idle_timeout", OptionsIdleTimeoutDefault,
-			"options.max_pool_size", OptionsMaxPoolSizeDefault,
+			"options.connect_timeout", DefaultConnectTimeout,
+			"options.idle_timeout", DefaultIdleTimeout,
+			"options.max_pool_size", DefaultMaxPoolSize,
 		),
 		Logger:             clog.NewCompositeLogger(),
 		ConnectionResolver: NewPostgresConnectionResolver(),
 		Options:            cconf.NewEmptyConfigParams(),
+		retries:            DefaultRetriesCount,
 	}
 	return c
 }
@@ -108,9 +113,9 @@ func (c *PostgresConnection) Open(ctx context.Context, correlationId string) err
 		return nil
 	}
 
-	maxPoolSize := c.Options.GetAsIntegerWithDefault("max_pool_size", OptionsMaxPoolSizeDefault)
-	idleTimeoutMS := c.Options.GetAsIntegerWithDefault("idle_timeout", OptionsIdleTimeoutDefault)
-	connectTimeoutMS := c.Options.GetAsIntegerWithDefault("connect_timeout", OptionsConnectTimeoutDefault)
+	maxPoolSize := c.Options.GetAsIntegerWithDefault("max_pool_size", DefaultMaxPoolSize)
+	idleTimeoutMS := c.Options.GetAsIntegerWithDefault("idle_timeout", DefaultIdleTimeout)
+	connectTimeoutMS := c.Options.GetAsIntegerWithDefault("connect_timeout", DefaultConnectTimeout)
 
 	config, err := pgxpool.ParseConfig(uri)
 	if err != nil {
@@ -121,23 +126,37 @@ func (c *PostgresConnection) Open(ctx context.Context, correlationId string) err
 	if connectTimeoutMS > 0 {
 		config.ConnConfig.ConnectTimeout = time.Duration((int64)(connectTimeoutMS)) * time.Millisecond
 	}
+	if idleTimeoutMS > 0 {
+		config.MaxConnIdleTime = time.Duration((int64)(idleTimeoutMS)) * time.Millisecond
+	}
+	if maxPoolSize > 0 {
+		config.MaxConns = (int32)(maxPoolSize)
+	}
 
 	c.Logger.Debug(ctx, correlationId, "Connecting to postgres")
 
-	pool, err := pgxpool.ConnectConfig(ctx, config)
-	if err != nil || pool == nil {
-		err = cerr.NewConnectionError(correlationId, "CONNECT_FAILED", "Connection to postgres failed").WithCause(err)
-	} else {
-		if idleTimeoutMS > 0 {
-			pool.Config().MaxConnIdleTime = time.Duration((int64)(idleTimeoutMS)) * time.Millisecond
-		}
-		if maxPoolSize > 0 {
-			pool.Config().MaxConns = (int32)(maxPoolSize)
+	retries := c.retries
+	for retries > 0 {
+		pool, err := pgxpool.ConnectConfig(ctx, config)
+		if err != nil {
+			retries--
+			if retries <= 0 {
+				return cerr.
+					NewConnectionError(correlationId, "CONNECT_FAILED", "Connection to postgres failed").
+					WithCause(err)
+			}
+			c.Logger.Debug(ctx, correlationId, "Failed to connect to postgress, try reconnect...")
+			err = c.waitForRetry(ctx, correlationId, retries)
+			if err != nil {
+				return err
+			}
+			continue
 		}
 		c.Connection = pool
 		c.DatabaseName = config.ConnConfig.Database
+		break
 	}
-	return err
+	return nil
 }
 
 // Close component and frees used resources.
@@ -162,4 +181,23 @@ func (c *PostgresConnection) GetConnection() *pgxpool.Pool {
 
 func (c *PostgresConnection) GetDatabaseName() string {
 	return c.DatabaseName
+}
+
+func (c *PostgresConnection) waitForRetry(ctx context.Context, correlationId string, retries int) error {
+	waitTime := DefaultConnectTimeout * int(math.Pow(float64(c.retries-retries), 2))
+
+	select {
+	case <-time.After(time.Duration(waitTime) * time.Millisecond):
+		return nil
+	case <-ctx.Done():
+		return cerr.ApplicationErrorFactory.Create(
+			&cerr.ErrorDescription{
+				Type:          "Application",
+				Category:      "Application",
+				Code:          "CONTEXT_CANCELLED",
+				Message:       "request canceled by parent context",
+				CorrelationId: correlationId,
+			},
+		)
+	}
 }
