@@ -13,7 +13,7 @@ type DummyRefPostgresPersistence struct {
 
 func NewDummyRefPostgresPersistence() *DummyRefPostgresPersistence {
 	c := &DummyRefPostgresPersistence{}
-	c.IdentifiablePostgresPersistence = *persist.InheritIdentifiablePostgresPersistence[*fixtures.Dummy, string](c, "dummies")
+	c.IdentifiablePostgresPersistence = *persist.InheritIdentifiablePostgresPersistence[*fixtures.Dummy, string](context.TODO(), c, "dummies")
 	return c
 }
 
@@ -29,7 +29,7 @@ func (c *DummyRefPostgresPersistence) GetPageByFilter(ctx context.Context, corre
 
 	return c.IdentifiablePostgresPersistence.GetPageByFilter(ctx, correlationId,
 		filterObj, paging,
-		sorting, nil,
+		sorting, "",
 	)
 }
 

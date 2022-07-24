@@ -52,9 +52,9 @@ type IdentifiableJsonPostgresPersistence[T any, K any] struct {
 //	Parameters:
 //		- overrides References to override virtual methods
 //		- tableName    (optional) a table name.
-func InheritIdentifiableJsonPostgresPersistence[T any, K any](overrides IPostgresPersistenceOverrides[T], tableName string) *IdentifiableJsonPostgresPersistence[T, K] {
+func InheritIdentifiableJsonPostgresPersistence[T any, K any](ctx context.Context, overrides IPostgresPersistenceOverrides[T], tableName string) *IdentifiableJsonPostgresPersistence[T, K] {
 	c := &IdentifiableJsonPostgresPersistence[T, K]{}
-	c.IdentifiablePostgresPersistence = *InheritIdentifiablePostgresPersistence[T, K](overrides, tableName)
+	c.IdentifiablePostgresPersistence = *InheritIdentifiablePostgresPersistence[T, K](ctx, overrides, tableName)
 	return c
 }
 
@@ -141,21 +141,21 @@ func (c *IdentifiableJsonPostgresPersistence[T, K]) UpdatePartially(ctx context.
 	query := "UPDATE " + c.QuotedTableName() + " SET \"data\"=\"data\"||$2 WHERE \"id\"=$1 RETURNING *"
 	values := []any{id, data.Value()}
 
-	qResult, qErr := c.IdentifiablePostgresPersistence.Client.Query(ctx, query, values...)
-
-	if qErr != nil {
-		return result, qErr
+	rows, err := c.IdentifiablePostgresPersistence.Client.Query(ctx, query, values...)
+	if err != nil {
+		return result, err
 	}
-	defer qResult.Close()
+	defer rows.Close()
 
-	if !qResult.Next() {
-		return result, qResult.Err()
+	if !rows.Next() {
+		return result, rows.Err()
 	}
-	rows, vErr := qResult.Values()
-	if vErr == nil && len(rows) > 0 {
-		result = c.IdentifiablePostgresPersistence.Overrides.ConvertToPublic(qResult)
+
+	_values, err := rows.Values()
+	if err == nil && len(_values) > 0 {
+		result = c.IdentifiablePostgresPersistence.Overrides.ConvertToPublic(rows)
 		c.IdentifiablePostgresPersistence.Logger.Trace(ctx, correlationId, "Updated partially in %s with id = %s", c.IdentifiablePostgresPersistence.TableName, id)
 		return result, nil
 	}
-	return result, vErr
+	return result, rows.Err()
 }

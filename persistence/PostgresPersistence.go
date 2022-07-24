@@ -2,7 +2,6 @@ package persistence
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"github.com/jackc/pgx/v4"
 	"math/rand"
@@ -17,7 +16,7 @@ import (
 	cerr "github.com/pip-services3-gox/pip-services3-commons-gox/errors"
 	cref "github.com/pip-services3-gox/pip-services3-commons-gox/refer"
 	clog "github.com/pip-services3-gox/pip-services3-components-gox/log"
-	cmpersist "github.com/pip-services3-gox/pip-services3-data-gox/persistence"
+	cpersist "github.com/pip-services3-gox/pip-services3-data-gox/persistence"
 	conn "github.com/pip-services3-gox/pip-services3-postgres-gox/connect"
 )
 
@@ -58,8 +57,10 @@ type IPostgresPersistenceOverrides[T any] interface {
 //		- \*:credential-store:\*:\*:1.0 (optional) Credential stores to resolve credentials
 //
 //	### Example ###
+// TODO::add examples
 type PostgresPersistence[T any] struct {
-	Overrides        IPostgresPersistenceOverrides[T]
+	Overrides IPostgresPersistenceOverrides[T]
+	// Defines general JSON convertors
 	JsonConvertor    cconv.IJSONEngine[T]
 	JsonMapConvertor cconv.IJSONEngine[map[string]any]
 
@@ -87,14 +88,19 @@ type PostgresPersistence[T any] struct {
 	TableName   string
 	MaxPageSize int
 
+	// Defines channel which closed before closing persistence and signals about terminating
+	// all going processes
+	//	!IMPORTANT if you do not Close existing query response the persistence can not be closed
+	//	see IsTerminated method
 	isTerminated chan struct{}
 }
 
 // InheritPostgresPersistence creates a new instance of the persistence component.
 //	Parameters:
+//		- ctx context.Context
 //		- overrides References to override virtual methods
 //		- tableName    (optional) a table name.
-func InheritPostgresPersistence[T any](overrides IPostgresPersistenceOverrides[T], tableName string) *PostgresPersistence[T] {
+func InheritPostgresPersistence[T any](ctx context.Context, overrides IPostgresPersistenceOverrides[T], tableName string) *PostgresPersistence[T] {
 	c := &PostgresPersistence[T]{
 		Overrides: overrides,
 		defaultConfig: cconf.NewConfigParamsFromTuples(
@@ -117,7 +123,7 @@ func InheritPostgresPersistence[T any](overrides IPostgresPersistenceOverrides[T
 	}
 
 	c.DependencyResolver = cref.NewDependencyResolver()
-	c.DependencyResolver.Configure(context.TODO(), c.defaultConfig)
+	c.DependencyResolver.Configure(ctx, c.defaultConfig)
 
 	return c
 }
@@ -143,12 +149,14 @@ func (c *PostgresPersistence[T]) Configure(ctx context.Context, config *cconf.Co
 //		- ctx context.Context
 //		- references references to locate the component dependencies.
 func (c *PostgresPersistence[T]) SetReferences(ctx context.Context, references cref.IReferences) {
+
 	c.references = references
 	c.Logger.SetReferences(ctx, references)
 
 	// Get connection
 	c.DependencyResolver.SetReferences(ctx, references)
 	result := c.DependencyResolver.GetOneOptional("connection")
+
 	if dep, ok := result.(*conn.PostgresConnection); ok {
 		c.Connection = dep
 	}
@@ -242,12 +250,12 @@ func (c *PostgresPersistence[T]) ClearSchema() {
 //		- value an object in internal format to convert.
 //	Returns: converted object in func (c * PostgresPersistence) format.
 func (c *PostgresPersistence[T]) ConvertToPublic(rows pgx.Rows) T {
-	// TODO::fixme
 	var defaultValue T
-	values, valErr := rows.Values()
-	if valErr != nil || values == nil {
+	values, err := rows.Values()
+	if err != nil || values == nil {
 		return defaultValue
 	}
+
 	columns := rows.FieldDescriptions()
 
 	buf := make(map[string]any, 0)
@@ -332,9 +340,6 @@ func (c *PostgresPersistence[T]) Open(ctx context.Context, correlationId string)
 	if c.Connection == nil {
 		c.Connection = c.createConnection(ctx)
 		c.localConnection = true
-	}
-
-	if c.localConnection {
 		err = c.Connection.Open(ctx, correlationId)
 	}
 
@@ -368,7 +373,6 @@ func (c *PostgresPersistence[T]) Open(ctx context.Context, correlationId string)
 	}
 
 	return err
-
 }
 
 // Close component and frees used resources.
@@ -408,20 +412,17 @@ func (c *PostgresPersistence[T]) Clear(ctx context.Context, correlationId string
 		return errors.New("Table name is not defined")
 	}
 
-	query := "DELETE FROM " + c.QuotedTableName()
-
-	qResult, err := c.Client.Query(ctx, query)
+	rows, err := c.Client.Query(ctx, "DELETE FROM "+c.QuotedTableName())
 	if err != nil {
 		err = cerr.NewConnectionError(correlationId, "CONNECT_FAILED", "Connection to postgres failed").
 			WithCause(err)
 	}
-	defer qResult.Close()
-	return err
+	rows.Close()
+	return nil
 }
 
 func (c *PostgresPersistence[T]) CreateSchema(ctx context.Context, correlationId string) (err error) {
-	// TODO::fixme
-	if c.schemaStatements == nil || len(c.schemaStatements) == 0 {
+	if len(c.schemaStatements) == 0 {
 		return nil
 	}
 
@@ -470,22 +471,21 @@ func (c *PostgresPersistence[T]) checkTableExists(ctx context.Context) (bool, er
 
 // GenerateColumns generates a list of column names to use in SQL statements like: "column1,column2,column3"
 //	Parameters:
-//		- values an array with column values or a key-value map
+//		- columns an array with column values
 //	Returns: a generated list of column names
-func (c *PostgresPersistence[T]) GenerateColumns(values any) string {
-
-	items := c.convertToMap(values)
-	if items == nil {
+func (c *PostgresPersistence[T]) GenerateColumns(columns []string) string {
+	if len(columns) == 0 {
 		return ""
 	}
-	result := strings.Builder{}
-	for item := range items {
-		if result.String() != "" {
-			result.WriteString(",")
+
+	builder := strings.Builder{}
+	for _, item := range columns {
+		if builder.String() != "" {
+			builder.WriteString(",")
 		}
-		result.WriteString(c.QuoteIdentifier(item))
+		builder.WriteString(c.QuoteIdentifier(item))
 	}
-	return result.String()
+	return builder.String()
 
 }
 
@@ -493,99 +493,61 @@ func (c *PostgresPersistence[T]) GenerateColumns(values any) string {
 //	Parameters:
 //		- values an array with column values or a key-value map
 //	Returns: a generated list of value parameters
-func (c *PostgresPersistence[T]) GenerateParameters(values any) string {
-
-	result := strings.Builder{}
-	// String arrays
-	if val, ok := values.([]any); ok {
-		for index := 1; index <= len(val); index++ {
-			if result.String() != "" {
-				result.WriteString(",")
-			}
-			result.WriteString("$")
-			result.WriteString(strconv.FormatInt((int64)(index), 10))
-		}
-
-		return result.String()
-	}
-
-	items := c.convertToMap(values)
-	if items == nil {
+func (c *PostgresPersistence[T]) GenerateParameters(valuesCount int) string {
+	if valuesCount <= 0 {
 		return ""
 	}
 
-	for index := 1; index <= len(items); index++ {
-		if result.String() != "" {
-			result.WriteString(",")
+	builder := strings.Builder{}
+	for index := 1; index <= valuesCount; index++ {
+		if builder.String() != "" {
+			builder.WriteString(",")
 		}
-		result.WriteString("$")
-		result.WriteString(strconv.FormatInt((int64)(index), 10))
+		builder.WriteString("$")
+		builder.WriteString(strconv.FormatInt((int64)(index), 10))
 	}
 
-	return result.String()
+	return builder.String()
 }
 
 // GenerateSetParameters generates a list of column sets to use in UPDATE statements like: column1=$1,column2=$2
 //	Parameters:
 //		- values an array with column values or a key-value map
 //	Returns: a generated list of column sets
-func (c *PostgresPersistence[T]) GenerateSetParameters(values any) (setParams string, columns string) {
+func (c *PostgresPersistence[T]) GenerateSetParameters(columns []string) string {
 
-	items := c.convertToMap(values)
-	if items == nil {
-		return "", ""
+	if len(columns) == 0 {
+		return ""
 	}
 	setParamsBuf := strings.Builder{}
-	colBuf := strings.Builder{}
 	index := 1
-	for column := range items {
+	for i := range columns {
 		if setParamsBuf.String() != "" {
 			setParamsBuf.WriteString(",")
-			colBuf.WriteString(",")
 		}
-		setParamsBuf.WriteString(c.QuoteIdentifier(column) + "=$" + strconv.FormatInt((int64)(index), 10))
-		colBuf.WriteString(c.QuoteIdentifier(column))
+		setParamsBuf.WriteString(c.QuoteIdentifier(columns[i]) + "=$" + strconv.FormatInt((int64)(index), 10))
 		index++
 	}
-	return setParamsBuf.String(), colBuf.String()
+	return setParamsBuf.String()
 }
 
-// GenerateValues generates a list of column parameters
+// GenerateColumnsAndValues generates a list of column parameters
 //	Parameters:
 //		- values an array with column values or a key-value map
 //	Returns: a generated list of column values
-func (c *PostgresPersistence[T]) GenerateValues(columns string, values any) []any {
-	results := make([]any, 0, 1)
-
-	items := c.convertToMap(values)
-	if items == nil {
-		return nil
+func (c *PostgresPersistence[T]) GenerateColumnsAndValues(objMap map[string]any) ([]string, []any) {
+	if len(objMap) == 0 {
+		return nil, nil
 	}
 
-	if columns == "" {
-		panic("GenerateValues: Columns must be set for properly convert")
+	ln := len(objMap)
+	columns := make([]string, 0, ln)
+	values := make([]any, 0, ln)
+	for _col, _val := range objMap {
+		columns = append(columns, _col)
+		values = append(values, _val)
 	}
-
-	columnNames := strings.Split(strings.ReplaceAll(columns, "\"", ""), ",")
-	for _, item := range columnNames {
-		results = append(results, items[item])
-	}
-	return results
-}
-
-func (c *PostgresPersistence[T]) convertToMap(values any) map[string]any {
-	mRes, mErr := json.Marshal(values)
-	if mErr != nil {
-		c.Logger.Error(context.TODO(), "PostgresPersistence", mErr, "Error data convertion")
-		return nil
-	}
-	items := make(map[string]any, 0)
-	mErr = json.Unmarshal(mRes, &items)
-	if mErr != nil {
-		c.Logger.Error(context.TODO(), "PostgresPersistence", mErr, "Error data convertion")
-		return nil
-	}
-	return items
+	return columns, values
 }
 
 // GetPageByFilter gets a page of data items retrieved by a given filter and sorted according to sort parameters.
@@ -600,13 +562,11 @@ func (c *PostgresPersistence[T]) convertToMap(values any) map[string]any {
 //		- select            (optional) projection JSON object
 //	Returns: receives a data page or error.
 func (c *PostgresPersistence[T]) GetPageByFilter(ctx context.Context, correlationId string,
-	filter any, paging cdata.PagingParams, sort any, sel any) (page cdata.DataPage[T], err error) {
+	filter string, paging cdata.PagingParams, sort string, selection string) (page cdata.DataPage[T], err error) {
 
 	query := "SELECT * FROM " + c.QuotedTableName()
-	if sel != nil {
-		if slct, ok := sel.(string); ok && slct != "" {
-			query = "SELECT " + slct + " FROM " + c.QuotedTableName()
-		}
+	if len(selection) > 0 {
+		query = "SELECT " + selection + " FROM " + c.QuotedTableName()
 	}
 
 	// Adjust max item count based on configuration paging
@@ -614,38 +574,32 @@ func (c *PostgresPersistence[T]) GetPageByFilter(ctx context.Context, correlatio
 	take := paging.GetTake((int64)(c.MaxPageSize))
 	pagingEnabled := paging.Total
 
-	if filter != nil {
-		if flt, ok := filter.(string); ok && flt != "" {
-			query += " WHERE " + flt
-		}
+	if len(filter) > 0 {
+		query += " WHERE " + filter
 	}
-
-	if sort != nil {
-		if srt, ok := sort.(string); ok && srt != "" {
-			query += " ORDER BY " + srt
-		}
+	if len(sort) > 0 {
+		query += " ORDER BY " + sort
 	}
-
 	if skip >= 0 {
 		query += " OFFSET " + strconv.FormatInt(skip, 10)
 	}
-
 	query += " LIMIT " + strconv.FormatInt(take, 10)
-	qResult, qErr := c.Client.Query(ctx, query)
 
-	if qErr != nil {
-		return *cdata.NewEmptyDataPage[T](), qErr
+	rows, err := c.Client.Query(ctx, query)
+	if err != nil {
+		return *cdata.NewEmptyDataPage[T](), err
 	}
-
-	defer qResult.Close()
+	defer rows.Close()
 
 	items := make([]T, 0, 0)
-	for qResult.Next() {
+	for rows.Next() {
 		if c.IsTerminated() {
-			qResult.Close()
-			return *cdata.NewEmptyDataPage[T](), cerr.NewError("query terminated").WithCorrelationId(correlationId)
+			rows.Close()
+			return *cdata.NewEmptyDataPage[T](), cerr.
+				NewError("query terminated").
+				WithCorrelationId(correlationId)
 		}
-		item := c.Overrides.ConvertToPublic(qResult)
+		item := c.Overrides.ConvertToPublic(rows)
 		items = append(items, item)
 	}
 
@@ -654,31 +608,15 @@ func (c *PostgresPersistence[T]) GetPageByFilter(ctx context.Context, correlatio
 	}
 
 	if pagingEnabled {
-		query := "SELECT COUNT(*) AS count FROM " + c.QuotedTableName()
-		if filter != nil {
-			if flt, ok := filter.(string); ok && flt != "" {
-				query += " WHERE " + flt
-			}
+		count, err := c.GetCountByFilter(ctx, correlationId, filter)
+		if err != nil {
+			return *cdata.NewEmptyDataPage[T](), err
 		}
 
-		qResult2, qErr2 := c.Client.Query(ctx, query)
-		if qErr2 != nil {
-			return *cdata.NewEmptyDataPage[T](), qErr2
-		}
-		defer qResult2.Close()
-		var count int64 = 0
-		if qResult2.Next() {
-			rows, _ := qResult2.Values()
-			if len(rows) == 1 {
-				count = cconv.LongConverter.ToLong(rows[0])
-			}
-		}
-		page = *cdata.NewDataPage[T](items, int(count))
-		return page, qResult2.Err()
+		return *cdata.NewDataPage[T](items, int(count)), nil
 	}
 
-	page = *cdata.NewDataPage[T](items, cdata.EmptyTotalValue)
-	return page, qResult.Err()
+	return *cdata.NewDataPage[T](items, cdata.EmptyTotalValue), rows.Err()
 }
 
 // GetCountByFilter gets a number of data items retrieved by a given filter.
@@ -690,33 +628,33 @@ func (c *PostgresPersistence[T]) GetPageByFilter(ctx context.Context, correlatio
 //		- filter            (optional) a filter JSON object
 //	Returns: data page or error.
 func (c *PostgresPersistence[T]) GetCountByFilter(ctx context.Context, correlationId string,
-	filter any) (count int64, err error) {
+	filter string) (int64, error) {
 
 	query := "SELECT COUNT(*) AS count FROM " + c.QuotedTableName()
+	if len(filter) > 0 {
+		query += " WHERE " + filter
+	}
 
-	if filter != nil {
-		if flt, ok := filter.(string); ok && flt != "" {
-			query += " WHERE " + flt
+	rows, err := c.Client.Query(ctx, query)
+	if err != nil {
+		return 0, err
+	}
+	defer rows.Close()
+
+	var count int64
+
+	if rows.Next() {
+		values, _ := rows.Values()
+		if len(values) == 1 {
+			count = cconv.LongConverter.ToLong(values[0])
 		}
 	}
 
-	qResult, qErr := c.Client.Query(ctx, query)
-	if qErr != nil {
-		return 0, qErr
-	}
-	defer qResult.Close()
-	count = 0
-	if qResult != nil && qResult.Next() {
-		rows, _ := qResult.Values()
-		if len(rows) == 1 {
-			count = cconv.LongConverter.ToLong(rows[0])
-		}
-	}
 	if count != 0 {
 		c.Logger.Trace(ctx, correlationId, "Counted %d items in %s", count, c.TableName)
 	}
 
-	return count, qResult.Err()
+	return count, rows.Err()
 }
 
 // GetListByFilter gets a list of data items retrieved by a given filter and sorted according to sort parameters.
@@ -731,43 +669,39 @@ func (c *PostgresPersistence[T]) GetCountByFilter(ctx context.Context, correlati
 //		- select           (optional) projection JSON object
 //	Returns: data list or error.
 func (c *PostgresPersistence[T]) GetListByFilter(ctx context.Context, correlationId string,
-	filter any, sort any, sel any) (items []T, err error) {
+	filter string, sort string, selection string) (items []T, err error) {
 
 	query := "SELECT * FROM " + c.QuotedTableName()
-	if sel != nil {
-		if slct, ok := sel.(string); ok && slct != "" {
-			query = "SELECT " + slct + " FROM " + c.QuotedTableName()
-		}
+
+	if len(selection) > 0 {
+		query = "SELECT " + selection + " FROM " + c.QuotedTableName()
 	}
 
-	if filter != nil {
-		if flt, ok := filter.(string); ok && flt != "" {
-			query += " WHERE " + flt
-		}
+	if len(filter) > 0 {
+		query += " WHERE " + filter
 	}
 
-	if sort != nil {
-		if srt, ok := sort.(string); ok && srt != "" {
-			query += " ORDER BY " + srt
-		}
+	if len(sort) > 0 {
+		query += " ORDER BY " + sort
 	}
 
-	qResult, qErr := c.Client.Query(ctx, query)
-
-	if qErr != nil {
-		return nil, qErr
+	rows, err := c.Client.Query(ctx, query)
+	if err != nil {
+		return nil, err
 	}
-	defer qResult.Close()
+	defer rows.Close()
+
 	items = make([]T, 0, 1)
-	for qResult.Next() {
-		item := c.Overrides.ConvertToPublic(qResult)
+	for rows.Next() {
+		item := c.Overrides.ConvertToPublic(rows)
 		items = append(items, item)
 	}
 
 	if items != nil {
 		c.Logger.Trace(ctx, correlationId, "Retrieved %d from %s", len(items), c.TableName)
 	}
-	return items, qResult.Err()
+
+	return items, rows.Err()
 }
 
 // GetOneRandom gets a random item from items that match to a given filter.
@@ -778,42 +712,11 @@ func (c *PostgresPersistence[T]) GetListByFilter(ctx context.Context, correlatio
 //		- correlationId     (optional) transaction id to trace execution through call chain.
 //		- filter            (optional) a filter JSON object
 //	Returns: random item or error.
-func (c *PostgresPersistence[T]) GetOneRandom(ctx context.Context, correlationId string, filter any) (item T, err error) {
-
-	query := "SELECT COUNT(*) AS count FROM " + c.QuotedTableName()
-
-	if filter != nil {
-		if flt, ok := filter.(string); ok && flt != "" {
-			query += " WHERE " + flt
-		}
+func (c *PostgresPersistence[T]) GetOneRandom(ctx context.Context, correlationId string, filter string) (item T, err error) {
+	count, err := c.GetCountByFilter(ctx, correlationId, filter)
+	if err != nil {
+		return item, err
 	}
-
-	qResult, qErr := c.Client.Query(ctx, query)
-	if qErr != nil {
-		return item, qErr
-	}
-	defer qResult.Close()
-
-	query = "SELECT * FROM " + c.QuotedTableName()
-	if filter != nil {
-		if flt, ok := filter.(string); ok && flt != "" {
-			query += " WHERE " + flt
-		}
-	}
-
-	var count int64 = 0
-	if !qResult.Next() {
-		return item, qResult.Err()
-	}
-	rows, _ := qResult.Values()
-	if len(rows) == 1 {
-		if row, ok := rows[0].(int64); ok {
-			count = row
-		} else {
-			count = 0
-		}
-	}
-
 	if count == 0 {
 		c.Logger.Trace(ctx, correlationId, "Can't retriev random item from %s. Table is empty.", c.TableName)
 		return item, nil
@@ -821,17 +724,26 @@ func (c *PostgresPersistence[T]) GetOneRandom(ctx context.Context, correlationId
 
 	rand.Seed(time.Now().UnixNano())
 	pos := rand.Int63n(int64(count))
+
+	// build query
+	query := "SELECT * FROM " + c.QuotedTableName()
+	if len(filter) > 0 {
+		query += " WHERE " + filter
+	}
 	query += " OFFSET " + strconv.FormatInt(pos, 10) + " LIMIT 1"
-	qResult2, qErr2 := c.Client.Query(ctx, query)
-	if qErr2 != nil {
-		return item, qErr
+
+	rows, err := c.Client.Query(ctx, query)
+	if err != nil {
+		return item, err
 	}
-	defer qResult2.Close()
-	if !qResult2.Next() {
+	defer rows.Close()
+
+	if !rows.Next() {
 		c.Logger.Trace(ctx, correlationId, "Random item wasn't found from %s", c.TableName)
-		return item, qResult2.Err()
+		return item, rows.Err()
 	}
-	item = c.Overrides.ConvertToPublic(qResult2)
+
+	item = c.Overrides.ConvertToPublic(rows)
 	c.Logger.Trace(ctx, correlationId, "Retrieved random item from %s", c.TableName)
 	return item, nil
 
@@ -845,24 +757,29 @@ func (c *PostgresPersistence[T]) GetOneRandom(ctx context.Context, correlationId
 //	Returns: (optional) callback function that receives created item or error.
 func (c *PostgresPersistence[T]) Create(ctx context.Context, correlationId string, item T) (result T, err error) {
 
-	row := c.Overrides.ConvertFromPublic(item)
-	columns := c.GenerateColumns(row)
-	params := c.GenerateParameters(row)
-	values := c.GenerateValues(columns, row)
-	query := "INSERT INTO " + c.QuotedTableName() + " (" + columns + ") VALUES (" + params + ") RETURNING *"
-	qResult, qErr := c.Client.Query(ctx, query, values...)
-	if qErr != nil {
-		return result, qErr
+	objMap := c.Overrides.ConvertFromPublic(item)
+	columns, values := c.GenerateColumnsAndValues(objMap)
+
+	columnsStr := c.GenerateColumns(columns)
+	paramsStr := c.GenerateParameters(len(values))
+
+	query := "INSERT INTO " + c.QuotedTableName() +
+		" (" + columnsStr + ") VALUES (" + paramsStr + ") RETURNING *"
+
+	rows, err := c.Client.Query(ctx, query, values...)
+	if err != nil {
+		return result, err
 	}
-	defer qResult.Close()
-	if !qResult.Next() {
-		return result, qResult.Err()
+	defer rows.Close()
+
+	if !rows.Next() {
+		return result, rows.Err()
 	}
-	item = c.Overrides.ConvertToPublic(qResult)
-	id := cmpersist.GetObjectId(item)
+
+	item = c.Overrides.ConvertToPublic(rows)
+	id := cpersist.GetObjectId(item)
 	c.Logger.Trace(ctx, correlationId, "Created in %s with id = %s", c.TableName, id)
 	return item, nil
-
 }
 
 // DeleteByFilter deletes data items that match to a given filter.
@@ -873,27 +790,25 @@ func (c *PostgresPersistence[T]) Create(ctx context.Context, correlationId strin
 //		- correlationId     (optional) transaction id to trace execution through call chain.
 //		- filter            (optional) a filter JSON object.
 //	Returns: error or nil for success.
-func (c *PostgresPersistence[T]) DeleteByFilter(ctx context.Context, correlationId string, filter string) (err error) {
+func (c *PostgresPersistence[T]) DeleteByFilter(ctx context.Context, correlationId string, filter string) error {
 	query := "DELETE FROM " + c.QuotedTableName()
-	if filter != "" {
+	if len(filter) > 0 {
 		query += " WHERE " + filter
 	}
 
-	qResult, qErr := c.Client.Query(ctx, query)
-	defer qResult.Close()
-
-	if qErr != nil {
-		return qErr
+	rows, err := c.Client.Query(ctx, query)
+	if err != nil {
+		return err
 	}
-	defer qResult.Close()
+	defer rows.Close()
 
 	var count int64 = 0
-	if !qResult.Next() {
-		return qResult.Err()
+	if !rows.Next() {
+		return rows.Err()
 	}
-	rows, _ := qResult.Values()
-	if len(rows) == 1 {
-		count = cconv.LongConverter.ToLong(rows[0])
+	values, _ := rows.Values()
+	if len(values) == 1 {
+		count = cconv.LongConverter.ToLong(values[0])
 	}
 	c.Logger.Trace(ctx, correlationId, "Deleted %d items from %s", count, c.TableName)
 	return nil

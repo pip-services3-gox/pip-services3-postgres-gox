@@ -13,7 +13,7 @@ type DummyJsonPostgresPersistence struct {
 
 func NewDummyJsonPostgresPersistence() *DummyJsonPostgresPersistence {
 	c := &DummyJsonPostgresPersistence{}
-	c.IdentifiableJsonPostgresPersistence = *persist.InheritIdentifiableJsonPostgresPersistence[fixtures.Dummy, string](c, "dummies_json")
+	c.IdentifiableJsonPostgresPersistence = *persist.InheritIdentifiableJsonPostgresPersistence[fixtures.Dummy, string](context.TODO(), c, "dummies_json")
 	return c
 }
 
@@ -35,7 +35,7 @@ func (c *DummyJsonPostgresPersistence) GetPageByFilter(ctx context.Context, corr
 
 	return c.IdentifiableJsonPostgresPersistence.GetPageByFilter(ctx, correlationId,
 		filterObj, paging,
-		nil, nil,
+		"", "",
 	)
 }
 
@@ -51,5 +51,5 @@ func (c *DummyJsonPostgresPersistence) GetCountByFilter(ctx context.Context, cor
 }
 
 func (c *DummyJsonPostgresPersistence) GetOneRandom(ctx context.Context, correlationId string) (item fixtures.Dummy, err error) {
-	return c.IdentifiableJsonPostgresPersistence.GetOneRandom(ctx, correlationId, nil)
+	return c.IdentifiableJsonPostgresPersistence.GetOneRandom(ctx, correlationId, "")
 }

@@ -12,7 +12,7 @@ type DummyMapPostgresPersistence struct {
 
 func NewDummyMapPostgresPersistence() *DummyMapPostgresPersistence {
 	c := &DummyMapPostgresPersistence{}
-	c.IdentifiablePostgresPersistence = *persist.InheritIdentifiablePostgresPersistence[map[string]any, string](c, "dummies")
+	c.IdentifiablePostgresPersistence = *persist.InheritIdentifiablePostgresPersistence[map[string]any, string](context.TODO(), c, "dummies")
 	return c
 }
 
@@ -34,7 +34,7 @@ func (c *DummyMapPostgresPersistence) GetPageByFilter(ctx context.Context, corre
 	sorting := ""
 
 	return c.IdentifiablePostgresPersistence.GetPageByFilter(ctx, correlationId,
-		filterObj, paging, sorting, nil,
+		filterObj, paging, sorting, "",
 	)
 }
 

@@ -6,7 +6,7 @@ import (
 
 	cconv "github.com/pip-services3-gox/pip-services3-commons-gox/convert"
 	cdata "github.com/pip-services3-gox/pip-services3-commons-gox/data"
-	cmpersist "github.com/pip-services3-gox/pip-services3-data-gox/persistence"
+	cpersist "github.com/pip-services3-gox/pip-services3-data-gox/persistence"
 )
 
 // IdentifiablePostgresPersistence Abstract persistence component that stores data in PostgreSQL
@@ -49,15 +49,16 @@ type IdentifiablePostgresPersistence[T any, K any] struct {
 
 // InheritIdentifiablePostgresPersistence creates a new instance of the persistence component.
 //	Parameters:
+//		- ctx context.Context
 //		- overrides References to override virtual methods
 //		- tableName    (optional) a table name.
-func InheritIdentifiablePostgresPersistence[T any, K any](overrides IPostgresPersistenceOverrides[T], tableName string) *IdentifiablePostgresPersistence[T, K] {
+func InheritIdentifiablePostgresPersistence[T any, K any](ctx context.Context, overrides IPostgresPersistenceOverrides[T], tableName string) *IdentifiablePostgresPersistence[T, K] {
 	if tableName == "" {
 		panic("Table name could not be empty")
 	}
 
 	c := &IdentifiablePostgresPersistence[T, K]{}
-	c.PostgresPersistence = InheritPostgresPersistence[T](overrides, tableName)
+	c.PostgresPersistence = InheritPostgresPersistence[T](ctx, overrides, tableName)
 
 	return c
 }
@@ -71,23 +72,19 @@ func InheritIdentifiablePostgresPersistence[T any, K any](overrides IPostgresPer
 func (c *IdentifiablePostgresPersistence[T, K]) GetListByIds(ctx context.Context, correlationId string,
 	ids []K) (items []T, err error) {
 
-	params := GenerateParameters[K](ids)
+	ln := len(ids)
+	params := c.GenerateParameters(ln)
 	query := "SELECT * FROM " + c.QuotedTableName() + " WHERE \"id\" IN(" + params + ")"
 
-	_ids := make([]any, len(ids), len(ids))
-	for i := range ids {
-		_ids[i] = ids[i]
+	rows, err := c.Client.Query(ctx, query, ItemsToAnySlice[K](ids)...)
+	if err != nil {
+		return nil, err
 	}
+	defer rows.Close()
 
-	qResult, qErr := c.Client.Query(ctx, query, _ids...)
-	if qErr != nil {
-		return nil, qErr
-	}
-	defer qResult.Close()
 	items = make([]T, 0, 0)
-	for qResult.Next() {
-
-		item := c.Overrides.ConvertToPublic(qResult)
+	for rows.Next() {
+		item := c.Overrides.ConvertToPublic(rows)
 		items = append(items, item)
 	}
 
@@ -95,7 +92,7 @@ func (c *IdentifiablePostgresPersistence[T, K]) GetListByIds(ctx context.Context
 		c.Logger.Trace(ctx, correlationId, "Retrieved %d from %s", len(items), c.TableName)
 	}
 
-	return items, qResult.Err()
+	return items, rows.Err()
 }
 
 // GetOneById gets a data item by its unique id.
@@ -108,24 +105,23 @@ func (c *IdentifiablePostgresPersistence[T, K]) GetOneById(ctx context.Context, 
 
 	query := "SELECT * FROM " + c.QuotedTableName() + " WHERE \"id\"=$1"
 
-	qResult, qErr := c.Client.Query(ctx, query, id)
-	if qErr != nil {
-		return item, qErr
+	rows, err := c.Client.Query(ctx, query, id)
+	if err != nil {
+		return item, err
 	}
-	defer qResult.Close()
-	if !qResult.Next() {
-		return item, qResult.Err()
+	defer rows.Close()
+
+	if !rows.Next() {
+		return item, rows.Err()
 	}
-	rows, vErr := qResult.Values()
-	if vErr == nil && len(rows) > 0 {
-		return c.Overrides.ConvertToPublic(qResult), nil
-		//if item == nil {
-		//	c.Logger.Trace(ctx, correlationId, "Nothing found from %s with id = %s", c.TableName, id)
-		//} else {
-		//	c.Logger.Trace(ctx, correlationId, "Retrieved from %s with id = %s", c.TableName, id)
-		//}
+
+	values, err := rows.Values()
+	if err == nil && len(values) > 0 {
+		c.Logger.Trace(ctx, correlationId, "Retrieved from %s with id = %s", c.TableName, id)
+		return c.Overrides.ConvertToPublic(rows), nil
 	}
-	return item, vErr
+	c.Logger.Trace(ctx, correlationId, "Nothing found from %s with id = %s", c.TableName, id)
+	return item, err
 }
 
 // Create a data item.
@@ -138,8 +134,8 @@ func (c *IdentifiablePostgresPersistence[T, K]) Create(ctx context.Context, corr
 	// TODO::fixme
 	// Assign unique id
 	var newItem any = item
-	//newItem = cmpersist.CloneObject(item, c.Prototype)
-	cmpersist.GenerateObjectId(&newItem)
+	//newItem = cpersist.CloneObject(item, c.Prototype)
+	cpersist.GenerateObjectId(&newItem)
 	item = newItem.(T)
 
 	return c.PostgresPersistence.Create(ctx, correlationId, item)
@@ -154,38 +150,41 @@ func (c *IdentifiablePostgresPersistence[T, K]) Create(ctx context.Context, corr
 //	Returns: (optional)  updated item or error.
 func (c *IdentifiablePostgresPersistence[T, K]) Set(ctx context.Context, correlationId string, item T) (result T, err error) {
 	// TODO::fixme
-
 	// Assign unique id
 	var newItem any = item
-	//newItem = cmpersist.CloneObject(item, c.Prototype)
-	cmpersist.GenerateObjectId(&newItem)
+	cpersist.GenerateObjectId(&newItem)
 
-	row := c.Overrides.ConvertFromPublic(item)
-	params := c.GenerateParameters(row)
-	setParams, columns := c.GenerateSetParameters(row)
-	values := c.GenerateValues(columns, row)
-	id := cmpersist.GetObjectId(newItem)
+	objMap := c.Overrides.ConvertFromPublic(item)
+	columns, values := c.GenerateColumnsAndValues(objMap)
 
-	query := "INSERT INTO " + c.QuotedTableName() + " (" + columns + ")" +
-		" VALUES (" + params + ")" +
+	paramsStr := c.GenerateParameters(len(values))
+	columnsStr := c.GenerateColumns(columns)
+	setParams := c.GenerateSetParameters(columns)
+
+	// TODO::fixme
+	id := cpersist.GetObjectId(newItem)
+
+	query := "INSERT INTO " + c.QuotedTableName() + " (" + columnsStr + ")" +
+		" VALUES (" + paramsStr + ")" +
 		" ON CONFLICT (\"id\") DO UPDATE SET " + setParams + " RETURNING *"
 
-	qResult, qErr := c.Client.Query(ctx, query, values...)
-	if qErr != nil {
-		return result, qErr
+	rows, err := c.Client.Query(ctx, query, values...)
+	if err != nil {
+		return result, err
 	}
-	defer qResult.Close()
+	defer rows.Close()
 
-	if !qResult.Next() {
-		return result, qResult.Err()
+	if !rows.Next() {
+		return result, rows.Err()
 	}
-	rows, vErr := qResult.Values()
-	if vErr == nil && len(rows) > 0 {
-		result = c.Overrides.ConvertToPublic(qResult)
+
+	_values, err := rows.Values()
+	if err == nil && len(_values) > 0 {
+		result = c.Overrides.ConvertToPublic(rows)
 		c.Logger.Trace(ctx, correlationId, "Set in %s with id = %s", c.TableName, id)
 		return result, nil
 	}
-	return result, vErr
+	return result, rows.Err()
 
 }
 
@@ -197,35 +196,36 @@ func (c *IdentifiablePostgresPersistence[T, K]) Set(ctx context.Context, correla
 //	Returns          (optional)  updated item or error.
 func (c *IdentifiablePostgresPersistence[T, K]) Update(ctx context.Context, correlationId string, item T) (result T, err error) {
 
+	// TODO::fixme
 	var newItem any = item
-	//newItem = cmpersist.CloneObject(item, c.Prototype)
-	id := cmpersist.GetObjectId(newItem)
+	//newItem = cpersist.CloneObject(item, c.Prototype)
+	id := cpersist.GetObjectId(newItem)
 	item = newItem.(T)
 
-	row := c.Overrides.ConvertFromPublic(item)
-	params, col := c.GenerateSetParameters(row)
-	values := c.GenerateValues(col, row)
+	objMap := c.Overrides.ConvertFromPublic(item)
+	columns, values := c.GenerateColumnsAndValues(objMap)
+	paramsStr := c.GenerateSetParameters(columns)
 	values = append(values, id)
 
 	query := "UPDATE " + c.QuotedTableName() +
-		" SET " + params + " WHERE \"id\"=$" + strconv.FormatInt((int64)(len(values)), 10) + " RETURNING *"
+		" SET " + paramsStr + " WHERE \"id\"=$" + strconv.FormatInt((int64)(len(values)), 10) + " RETURNING *"
 
-	qResult, qErr := c.Client.Query(ctx, query, values...)
+	rows, err := c.Client.Query(ctx, query, values...)
+	if err != nil {
+		return result, err
+	}
+	defer rows.Close()
+	if !rows.Next() {
+		return result, rows.Err()
+	}
 
-	if qErr != nil {
-		return result, qErr
-	}
-	defer qResult.Close()
-	if !qResult.Next() {
-		return result, qResult.Err()
-	}
-	rows, vErr := qResult.Values()
-	if vErr == nil && len(rows) > 0 {
-		result = c.Overrides.ConvertToPublic(qResult)
+	_values, err := rows.Values()
+	if err == nil && len(_values) > 0 {
+		result = c.Overrides.ConvertToPublic(rows)
 		c.Logger.Trace(ctx, correlationId, "Updated in %s with id = %s", c.TableName, id)
 		return result, nil
 	}
-	return result, vErr
+	return result, err
 }
 
 // UpdatePartially updates only few selected fields in a data item.
@@ -237,30 +237,32 @@ func (c *IdentifiablePostgresPersistence[T, K]) Update(ctx context.Context, corr
 //	Returns: updated item or error.
 func (c *IdentifiablePostgresPersistence[T, K]) UpdatePartially(ctx context.Context, correlationId string, id K, data cdata.AnyValueMap) (result T, err error) {
 
-	row := c.Overrides.ConvertFromPublicPartial(data.Value())
-	params, col := c.GenerateSetParameters(row)
-	values := c.GenerateValues(col, row)
+	objMap := c.Overrides.ConvertFromPublicPartial(data.Value())
+	columns, values := c.GenerateColumnsAndValues(objMap)
+	paramsStr := c.GenerateSetParameters(columns)
+
 	values = append(values, id)
 
 	query := "UPDATE " + c.QuotedTableName() +
-		" SET " + params + " WHERE \"id\"=$" + strconv.FormatInt((int64)(len(values)), 10) + " RETURNING *"
+		" SET " + paramsStr + " WHERE \"id\"=$" + strconv.FormatInt((int64)(len(values)), 10) + " RETURNING *"
 
-	qResult, qErr := c.Client.Query(ctx, query, values...)
+	rows, err := c.Client.Query(ctx, query, values...)
+	if err != nil {
+		return result, err
+	}
+	defer rows.Close()
 
-	if qErr != nil {
-		return result, qErr
+	if !rows.Next() {
+		return result, rows.Err()
 	}
-	defer qResult.Close()
-	if !qResult.Next() {
-		return result, qResult.Err()
-	}
-	rows, vErr := qResult.Values()
-	if vErr == nil && len(rows) > 0 {
-		result = c.Overrides.ConvertToPublic(qResult)
+
+	_values, err := rows.Values()
+	if err == nil && len(_values) > 0 {
+		result = c.Overrides.ConvertToPublic(rows)
 		c.Logger.Trace(ctx, correlationId, "Updated partially in %s with id = %s", c.TableName, id)
 		return result, nil
 	}
-	return result, vErr
+	return result, rows.Err()
 }
 
 // DeleteById deletes a data item by its unique id.
@@ -273,22 +275,23 @@ func (c *IdentifiablePostgresPersistence[T, K]) DeleteById(ctx context.Context, 
 
 	query := "DELETE FROM " + c.QuotedTableName() + " WHERE \"id\"=$1 RETURNING *"
 
-	qResult, qErr := c.Client.Query(ctx, query, id)
+	rows, err := c.Client.Query(ctx, query, id)
+	if err != nil {
+		return result, err
+	}
+	defer rows.Close()
 
-	if qErr != nil {
-		return result, qErr
+	if !rows.Next() {
+		return result, rows.Err()
 	}
-	defer qResult.Close()
-	if !qResult.Next() {
-		return result, qResult.Err()
-	}
-	rows, vErr := qResult.Values()
-	if vErr == nil && len(rows) > 0 {
-		result = c.Overrides.ConvertToPublic(qResult)
+
+	_values, err := rows.Values()
+	if err == nil && len(_values) > 0 {
+		result = c.Overrides.ConvertToPublic(rows)
 		c.Logger.Trace(ctx, correlationId, "Deleted from %s with id = %s", c.TableName, id)
 		return result, nil
 	}
-	return result, vErr
+	return result, rows.Err()
 }
 
 // DeleteByIds deletes multiple data items by their unique ids.
@@ -299,29 +302,28 @@ func (c *IdentifiablePostgresPersistence[T, K]) DeleteById(ctx context.Context, 
 //	Returns: (optional)  error or null for success.
 func (c *IdentifiablePostgresPersistence[T, K]) DeleteByIds(ctx context.Context, correlationId string, ids []K) error {
 
-	params := GenerateParameters[K](ids)
-	query := "DELETE FROM " + c.QuotedTableName() + " WHERE \"id\" IN(" + params + ")"
+	ln := len(ids)
+	paramsStr := c.GenerateParameters(ln)
 
-	_ids := make([]any, len(ids), len(ids))
-	for i := range ids {
-		_ids[i] = ids[i]
-	}
-	qResult, qErr := c.Client.Query(ctx, query, _ids...)
+	query := "DELETE FROM " + c.QuotedTableName() + " WHERE \"id\" IN(" + paramsStr + ")"
 
-	if qErr != nil {
-		return qErr
+	rows, err := c.Client.Query(ctx, query, ItemsToAnySlice[K](ids)...)
+	if err != nil {
+		return err
 	}
-	defer qResult.Close()
-	if !qResult.Next() {
-		return qResult.Err()
+	defer rows.Close()
+
+	if !rows.Next() {
+		return rows.Err()
 	}
+
 	var count int64 = 0
-	rows, vErr := qResult.Values()
-	if vErr == nil && len(rows) == 1 {
-		count = cconv.LongConverter.ToLong(rows[0])
+	_values, err := rows.Values()
+	if err == nil && len(_values) == 1 {
+		count = cconv.LongConverter.ToLong(_values[0])
 		if count != 0 {
 			c.Logger.Trace(ctx, correlationId, "Deleted %d items from %s", count, c.TableName)
 		}
 	}
-	return vErr
+	return rows.Err()
 }
