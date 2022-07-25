@@ -5,7 +5,6 @@ import (
 	"github.com/jackc/pgx/v4"
 	cconv "github.com/pip-services3-gox/pip-services3-commons-gox/convert"
 	cdata "github.com/pip-services3-gox/pip-services3-commons-gox/data"
-	cmpersist "github.com/pip-services3-gox/pip-services3-data-gox/persistence"
 )
 
 // IdentifiableJsonPostgresPersistence is an abstract persistence component that stores data in PostgreSQL in JSON or JSONB fields
@@ -44,6 +43,7 @@ import (
 //		- \*:credential-store:\*:\*:1.0 (optional) Credential stores to resolve credentials
 //
 // ### Example ###
+// TODO::add examples
 type IdentifiableJsonPostgresPersistence[T any, K any] struct {
 	IdentifiablePostgresPersistence[T, K]
 }
@@ -52,9 +52,9 @@ type IdentifiableJsonPostgresPersistence[T any, K any] struct {
 //	Parameters:
 //		- overrides References to override virtual methods
 //		- tableName    (optional) a table name.
-func InheritIdentifiableJsonPostgresPersistence[T any, K any](ctx context.Context, overrides IPostgresPersistenceOverrides[T], tableName string) *IdentifiableJsonPostgresPersistence[T, K] {
+func InheritIdentifiableJsonPostgresPersistence[T any, K any](overrides IPostgresPersistenceOverrides[T], tableName string) *IdentifiableJsonPostgresPersistence[T, K] {
 	c := &IdentifiableJsonPostgresPersistence[T, K]{}
-	c.IdentifiablePostgresPersistence = *InheritIdentifiablePostgresPersistence[T, K](ctx, overrides, tableName)
+	c.IdentifiablePostgresPersistence = *InheritIdentifiablePostgresPersistence[T, K](overrides, tableName)
 	return c
 }
 
@@ -109,7 +109,7 @@ func (c *IdentifiableJsonPostgresPersistence[T, K]) ConvertToPublic(rows pgx.Row
 //    - value     an object in public format to convert.
 // Returns converted object in internal format.
 func (c *IdentifiableJsonPostgresPersistence[T, K]) ConvertFromPublic(value T) map[string]any {
-	id := cmpersist.GetObjectId(value)
+	id := GetObjectId[K](value)
 
 	result := map[string]any{
 		"id":   id,

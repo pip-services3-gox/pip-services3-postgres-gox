@@ -2,11 +2,11 @@ package persistence
 
 import (
 	"context"
+	cerr "github.com/pip-services3-gox/pip-services3-commons-gox/errors"
 	"strconv"
 
 	cconv "github.com/pip-services3-gox/pip-services3-commons-gox/convert"
 	cdata "github.com/pip-services3-gox/pip-services3-commons-gox/data"
-	cpersist "github.com/pip-services3-gox/pip-services3-data-gox/persistence"
 )
 
 // IdentifiablePostgresPersistence Abstract persistence component that stores data in PostgreSQL
@@ -43,6 +43,7 @@ import (
 //- \*:credential-store:\*:\*:1.0 (optional) Credential stores to resolve credentials
 // *
 //### Example ###
+// TODO::add examples
 type IdentifiablePostgresPersistence[T any, K any] struct {
 	*PostgresPersistence[T]
 }
@@ -52,13 +53,13 @@ type IdentifiablePostgresPersistence[T any, K any] struct {
 //		- ctx context.Context
 //		- overrides References to override virtual methods
 //		- tableName    (optional) a table name.
-func InheritIdentifiablePostgresPersistence[T any, K any](ctx context.Context, overrides IPostgresPersistenceOverrides[T], tableName string) *IdentifiablePostgresPersistence[T, K] {
+func InheritIdentifiablePostgresPersistence[T any, K any](overrides IPostgresPersistenceOverrides[T], tableName string) *IdentifiablePostgresPersistence[T, K] {
 	if tableName == "" {
 		panic("Table name could not be empty")
 	}
 
 	c := &IdentifiablePostgresPersistence[T, K]{}
-	c.PostgresPersistence = InheritPostgresPersistence[T](ctx, overrides, tableName)
+	c.PostgresPersistence = InheritPostgresPersistence[T](overrides, tableName)
 
 	return c
 }
@@ -84,6 +85,12 @@ func (c *IdentifiablePostgresPersistence[T, K]) GetListByIds(ctx context.Context
 
 	items = make([]T, 0, 0)
 	for rows.Next() {
+		if c.IsTerminated() {
+			rows.Close()
+			return nil, cerr.
+				NewError("query terminated").
+				WithCorrelationId(correlationId)
+		}
 		item := c.Overrides.ConvertToPublic(rows)
 		items = append(items, item)
 	}
@@ -131,14 +138,10 @@ func (c *IdentifiablePostgresPersistence[T, K]) GetOneById(ctx context.Context, 
 //		- item              an item to be created.
 //	Returns: (optional)  created item or error.
 func (c *IdentifiablePostgresPersistence[T, K]) Create(ctx context.Context, correlationId string, item T) (result T, err error) {
-	// TODO::fixme
-	// Assign unique id
-	var newItem any = item
-	//newItem = cpersist.CloneObject(item, c.Prototype)
-	cpersist.GenerateObjectId(&newItem)
-	item = newItem.(T)
+	newItem := c.cloneItem(item)
+	newItem = GenerateObjectIdIfNotExists[T](newItem)
 
-	return c.PostgresPersistence.Create(ctx, correlationId, item)
+	return c.PostgresPersistence.Create(ctx, correlationId, newItem)
 }
 
 // Set a data item. If the data item exists it updates it,
@@ -149,12 +152,9 @@ func (c *IdentifiablePostgresPersistence[T, K]) Create(ctx context.Context, corr
 //		- item              an item to be set.
 //	Returns: (optional)  updated item or error.
 func (c *IdentifiablePostgresPersistence[T, K]) Set(ctx context.Context, correlationId string, item T) (result T, err error) {
-	// TODO::fixme
-	// Assign unique id
-	var newItem any = item
-	cpersist.GenerateObjectId(&newItem)
-
 	objMap := c.Overrides.ConvertFromPublic(item)
+	GenerateObjectMapIdIfNotExists(objMap)
+
 	columns, values := c.GenerateColumnsAndValues(objMap)
 
 	paramsStr := c.GenerateParameters(len(values))
@@ -162,7 +162,7 @@ func (c *IdentifiablePostgresPersistence[T, K]) Set(ctx context.Context, correla
 	setParams := c.GenerateSetParameters(columns)
 
 	// TODO::fixme
-	id := cpersist.GetObjectId(newItem)
+	id := objMap["id"]
 
 	query := "INSERT INTO " + c.QuotedTableName() + " (" + columnsStr + ")" +
 		" VALUES (" + paramsStr + ")" +
@@ -195,16 +195,10 @@ func (c *IdentifiablePostgresPersistence[T, K]) Set(ctx context.Context, correla
 //		- item              an item to be updated.
 //	Returns          (optional)  updated item or error.
 func (c *IdentifiablePostgresPersistence[T, K]) Update(ctx context.Context, correlationId string, item T) (result T, err error) {
-
-	// TODO::fixme
-	var newItem any = item
-	//newItem = cpersist.CloneObject(item, c.Prototype)
-	id := cpersist.GetObjectId(newItem)
-	item = newItem.(T)
-
 	objMap := c.Overrides.ConvertFromPublic(item)
 	columns, values := c.GenerateColumnsAndValues(objMap)
 	paramsStr := c.GenerateSetParameters(columns)
+	id := objMap["id"]
 	values = append(values, id)
 
 	query := "UPDATE " + c.QuotedTableName() +
@@ -236,11 +230,9 @@ func (c *IdentifiablePostgresPersistence[T, K]) Update(ctx context.Context, corr
 //		- data              a map with fields to be updated.
 //	Returns: updated item or error.
 func (c *IdentifiablePostgresPersistence[T, K]) UpdatePartially(ctx context.Context, correlationId string, id K, data cdata.AnyValueMap) (result T, err error) {
-
 	objMap := c.Overrides.ConvertFromPublicPartial(data.Value())
 	columns, values := c.GenerateColumnsAndValues(objMap)
 	paramsStr := c.GenerateSetParameters(columns)
-
 	values = append(values, id)
 
 	query := "UPDATE " + c.QuotedTableName() +
@@ -272,7 +264,6 @@ func (c *IdentifiablePostgresPersistence[T, K]) UpdatePartially(ctx context.Cont
 //		- id                an id of the item to be deleted
 //	Returns: (optional)  deleted item or error.
 func (c *IdentifiablePostgresPersistence[T, K]) DeleteById(ctx context.Context, correlationId string, id K) (result T, err error) {
-
 	query := "DELETE FROM " + c.QuotedTableName() + " WHERE \"id\"=$1 RETURNING *"
 
 	rows, err := c.Client.Query(ctx, query, id)

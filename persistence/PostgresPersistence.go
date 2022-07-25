@@ -16,7 +16,6 @@ import (
 	cerr "github.com/pip-services3-gox/pip-services3-commons-gox/errors"
 	cref "github.com/pip-services3-gox/pip-services3-commons-gox/refer"
 	clog "github.com/pip-services3-gox/pip-services3-components-gox/log"
-	cpersist "github.com/pip-services3-gox/pip-services3-data-gox/persistence"
 	conn "github.com/pip-services3-gox/pip-services3-postgres-gox/connect"
 )
 
@@ -100,7 +99,7 @@ type PostgresPersistence[T any] struct {
 //		- ctx context.Context
 //		- overrides References to override virtual methods
 //		- tableName    (optional) a table name.
-func InheritPostgresPersistence[T any](ctx context.Context, overrides IPostgresPersistenceOverrides[T], tableName string) *PostgresPersistence[T] {
+func InheritPostgresPersistence[T any](overrides IPostgresPersistenceOverrides[T], tableName string) *PostgresPersistence[T] {
 	c := &PostgresPersistence[T]{
 		Overrides: overrides,
 		defaultConfig: cconf.NewConfigParamsFromTuples(
@@ -123,7 +122,7 @@ func InheritPostgresPersistence[T any](ctx context.Context, overrides IPostgresP
 	}
 
 	c.DependencyResolver = cref.NewDependencyResolver()
-	c.DependencyResolver.Configure(ctx, c.defaultConfig)
+	c.DependencyResolver.Configure(context.Background(), c.defaultConfig)
 
 	return c
 }
@@ -414,7 +413,8 @@ func (c *PostgresPersistence[T]) Clear(ctx context.Context, correlationId string
 
 	rows, err := c.Client.Query(ctx, "DELETE FROM "+c.QuotedTableName())
 	if err != nil {
-		err = cerr.NewConnectionError(correlationId, "CONNECT_FAILED", "Connection to postgres failed").
+		return cerr.
+			NewConnectionError(correlationId, "CONNECT_FAILED", "Connection to postgres failed").
 			WithCause(err)
 	}
 	rows.Close()
@@ -574,6 +574,7 @@ func (c *PostgresPersistence[T]) GetPageByFilter(ctx context.Context, correlatio
 	take := paging.GetTake((int64)(c.MaxPageSize))
 	pagingEnabled := paging.Total
 
+	// TODO::fixme
 	if len(filter) > 0 {
 		query += " WHERE " + filter
 	}
@@ -693,6 +694,12 @@ func (c *PostgresPersistence[T]) GetListByFilter(ctx context.Context, correlatio
 
 	items = make([]T, 0, 1)
 	for rows.Next() {
+		if c.IsTerminated() {
+			rows.Close()
+			return nil, cerr.
+				NewError("query terminated").
+				WithCorrelationId(correlationId)
+		}
 		item := c.Overrides.ConvertToPublic(rows)
 		items = append(items, item)
 	}
@@ -720,6 +727,11 @@ func (c *PostgresPersistence[T]) GetOneRandom(ctx context.Context, correlationId
 	if count == 0 {
 		c.Logger.Trace(ctx, correlationId, "Can't retriev random item from %s. Table is empty.", c.TableName)
 		return item, nil
+	}
+	if c.IsTerminated() {
+		return item, cerr.
+			NewError("query terminated").
+			WithCorrelationId(correlationId)
 	}
 
 	rand.Seed(time.Now().UnixNano())
@@ -776,10 +788,10 @@ func (c *PostgresPersistence[T]) Create(ctx context.Context, correlationId strin
 		return result, rows.Err()
 	}
 
-	item = c.Overrides.ConvertToPublic(rows)
-	id := cpersist.GetObjectId(item)
+	result = c.Overrides.ConvertToPublic(rows)
+	id := objMap["id"]
 	c.Logger.Trace(ctx, correlationId, "Created in %s with id = %s", c.TableName, id)
-	return item, nil
+	return result, nil
 }
 
 // DeleteByFilter deletes data items that match to a given filter.
@@ -812,4 +824,14 @@ func (c *PostgresPersistence[T]) DeleteByFilter(ctx context.Context, correlation
 	}
 	c.Logger.Trace(ctx, correlationId, "Deleted %d items from %s", count, c.TableName)
 	return nil
+}
+
+func (c *PostgresPersistence[T]) cloneItem(item any) T {
+	if cloneableItem, ok := item.(cdata.ICloneable[T]); ok {
+		return cloneableItem.Clone()
+	}
+
+	strObject, _ := c.JsonConvertor.ToJson(item.(T))
+	newItem, _ := c.JsonConvertor.FromJson(strObject)
+	return newItem
 }

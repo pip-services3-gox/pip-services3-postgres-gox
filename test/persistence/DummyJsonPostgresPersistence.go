@@ -13,7 +13,7 @@ type DummyJsonPostgresPersistence struct {
 
 func NewDummyJsonPostgresPersistence() *DummyJsonPostgresPersistence {
 	c := &DummyJsonPostgresPersistence{}
-	c.IdentifiableJsonPostgresPersistence = *persist.InheritIdentifiableJsonPostgresPersistence[fixtures.Dummy, string](context.TODO(), c, "dummies_json")
+	c.IdentifiableJsonPostgresPersistence = *persist.InheritIdentifiableJsonPostgresPersistence[fixtures.Dummy, string](c, "dummies_json")
 	return c
 }
 

@@ -12,7 +12,7 @@ type DummyMapPostgresPersistence struct {
 
 func NewDummyMapPostgresPersistence() *DummyMapPostgresPersistence {
 	c := &DummyMapPostgresPersistence{}
-	c.IdentifiablePostgresPersistence = *persist.InheritIdentifiablePostgresPersistence[map[string]any, string](context.TODO(), c, "dummies")
+	c.IdentifiablePostgresPersistence = *persist.InheritIdentifiablePostgresPersistence[map[string]any, string](c, "dummies")
 	return c
 }
 

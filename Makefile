@@ -7,4 +7,5 @@ run: install
 	@go run main.go
 
 test:
-	@go test -v ./test/...
+	@go clean -testcache
+	@go test  -v ./test/...
