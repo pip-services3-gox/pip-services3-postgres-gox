@@ -3,6 +3,7 @@ package persistence
 import (
 	"context"
 	cerr "github.com/pip-services3-gox/pip-services3-commons-gox/errors"
+	cpersist "github.com/pip-services3-gox/pip-services3-data-gox/persistence"
 	"strconv"
 
 	cconv "github.com/pip-services3-gox/pip-services3-commons-gox/convert"
@@ -36,14 +37,60 @@ import (
 //			- idle_timeout:         (optional) number of milliseconds a client must sit idle in the pool and not be checked out (default: 10000)
 //			- max_pool_size:        (optional) maximum number of clients the pool should contain (default: 10)
 //
-//### References ###
+//	### References ###
+//		- \*:logger:\*:\*:1.0           (optional) ILogger components to pass log messages components to pass log messages
+//		- \*:discovery:\*:\*:1.0        (optional) IDiscovery services
+//		- \*:credential-store:\*:\*:1.0 (optional) Credential stores to resolve credentials
+//	*
+//	### Example ###
+//		type DummyPostgresPersistence struct {
+//			persist.IdentifiablePostgresPersistence[fixtures.Dummy, string]
+//		}
 //
-//- \*:logger:\*:\*:1.0           (optional) ILogger components to pass log messages components to pass log messages
-//- \*:discovery:\*:\*:1.0        (optional) IDiscovery services
-//- \*:credential-store:\*:\*:1.0 (optional) Credential stores to resolve credentials
-// *
-//### Example ###
-// TODO::add examples
+//		func NewDummyPostgresPersistence() *DummyPostgresPersistence {
+//			c := &DummyPostgresPersistence{}
+//			c.IdentifiablePostgresPersistence = *persist.InheritIdentifiablePostgresPersistence[fixtures.Dummy, string](c, "dummies")
+//			return c
+//		}
+//
+//		func (c *DummyPostgresPersistence) DefineSchema() {
+//			c.ClearSchema()
+//			c.IdentifiablePostgresPersistence.DefineSchema()
+//			// Row name must be in double quotes for properly case!!!
+//			c.EnsureSchema("CREATE TABLE " + c.QuotedTableName() + " (\"id\" TEXT PRIMARY KEY, \"key\" TEXT, \"content\" TEXT)")
+//			c.EnsureIndex(c.IdentifiablePostgresPersistence.TableName+"_key", map[string]string{"key": "1"}, map[string]string{"unique": "true"})
+//		}
+//
+//		func (c *DummyPostgresPersistence) GetPageByFilter(ctx context.Context, correlationId string,
+//			filter cdata.FilterParams, paging cdata.PagingParams) (page cdata.DataPage[fixtures.Dummy], err error) {
+//
+//			key, ok := filter.GetAsNullableString("Key")
+//			filterObj := ""
+//			if ok && key != "" {
+//				filterObj += "key='" + key + "'"
+//			}
+//			sorting := ""
+//
+//			return c.IdentifiablePostgresPersistence.GetPageByFilter(ctx, correlationId,
+//				filterObj, paging,
+//				sorting, "",
+//			)
+//		}
+//
+//		func (c *DummyPostgresPersistence) GetCountByFilter(ctx context.Context, correlationId string,
+//			filter cdata.FilterParams) (count int64, err error) {
+//
+//			key, ok := filter.GetAsNullableString("Key")
+//			filterObj := ""
+//			if ok && key != "" {
+//				filterObj += "key='" + key + "'"
+//			}
+//			return c.IdentifiablePostgresPersistence.GetCountByFilter(ctx, correlationId, filterObj)
+//		}
+//
+//		func (c *DummyPostgresPersistence) GetOneRandom(ctx context.Context, correlationId string) (item fixtures.Dummy, err error) {
+//			return c.IdentifiablePostgresPersistence.GetOneRandom(ctx, correlationId, "")
+//		}
 type IdentifiablePostgresPersistence[T any, K any] struct {
 	*PostgresPersistence[T]
 }
@@ -161,8 +208,7 @@ func (c *IdentifiablePostgresPersistence[T, K]) Set(ctx context.Context, correla
 	columnsStr := c.GenerateColumns(columns)
 	setParams := c.GenerateSetParameters(columns)
 
-	// TODO::fixme
-	id := objMap["id"]
+	id := cpersist.GetObjectId(objMap)
 
 	query := "INSERT INTO " + c.QuotedTableName() + " (" + columnsStr + ")" +
 		" VALUES (" + paramsStr + ")" +
@@ -198,7 +244,7 @@ func (c *IdentifiablePostgresPersistence[T, K]) Update(ctx context.Context, corr
 	objMap := c.Overrides.ConvertFromPublic(item)
 	columns, values := c.GenerateColumnsAndValues(objMap)
 	paramsStr := c.GenerateSetParameters(columns)
-	id := objMap["id"]
+	id := cpersist.GetObjectId(objMap)
 	values = append(values, id)
 
 	query := "UPDATE " + c.QuotedTableName() +

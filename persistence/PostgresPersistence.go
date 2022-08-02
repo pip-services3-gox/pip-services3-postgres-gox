@@ -55,8 +55,6 @@ type IPostgresPersistenceOverrides[T any] interface {
 //		- \*:discovery:\*:\*:1.0        (optional) IDiscovery services
 //		- \*:credential-store:\*:\*:1.0 (optional) Credential stores to resolve credentials
 //
-//	### Example ###
-// TODO::add examples
 type PostgresPersistence[T any] struct {
 	Overrides IPostgresPersistenceOverrides[T]
 	// Defines general JSON convertors
@@ -789,7 +787,7 @@ func (c *PostgresPersistence[T]) Create(ctx context.Context, correlationId strin
 	}
 
 	result = c.Overrides.ConvertToPublic(rows)
-	id := objMap["id"]
+	id := GetObjectId[any](result)
 	c.Logger.Trace(ctx, correlationId, "Created in %s with id = %s", c.TableName, id)
 	return result, nil
 }
