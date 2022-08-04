@@ -339,6 +339,9 @@ func (c *PostgresPersistence[T]) Open(ctx context.Context, correlationId string)
 	if c.Connection == nil {
 		c.Connection = c.createConnection(ctx)
 		c.localConnection = true
+	}
+
+	if c.localConnection {
 		err = c.Connection.Open(ctx, correlationId)
 	}
 
