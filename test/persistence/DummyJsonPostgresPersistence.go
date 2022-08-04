@@ -30,7 +30,7 @@ func (c *DummyJsonPostgresPersistence) GetPageByFilter(ctx context.Context, corr
 	key, ok := filter.GetAsNullableString("Key")
 	filterObj := ""
 	if ok && key != "" {
-		filterObj += "data->key='" + key + "'"
+		filterObj += "data->>'key'='" + key + "'"
 	}
 
 	return c.IdentifiableJsonPostgresPersistence.GetPageByFilter(ctx, correlationId,
@@ -44,7 +44,7 @@ func (c *DummyJsonPostgresPersistence) GetCountByFilter(ctx context.Context, cor
 
 	filterObj := ""
 	if key, ok := filter.GetAsNullableString("Key"); ok && key != "" {
-		filterObj += "data->key='" + key + "'"
+		filterObj += "data->>'key'='" + key + "'"
 	}
 
 	return c.IdentifiableJsonPostgresPersistence.GetCountByFilter(ctx, correlationId, filterObj)

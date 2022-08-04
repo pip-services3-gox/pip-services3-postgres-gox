@@ -56,6 +56,19 @@ func (c *DummyPersistenceFixture) TestCrudOperations(t *testing.T) {
 	assert.Equal(t, page.Data[0].Key, dummy1.Key)
 	assert.Equal(t, page.Data[1].Key, dummy2.Key)
 
+	page, err = c.persistence.GetPageByFilter(context.Background(), "",
+		*cdata.NewFilterParamsFromTuples("Key", "Key 11"),
+		*cdata.NewPagingParams(0, 5, true),
+	)
+	assert.Nil(t, err)
+
+	assert.True(t, page.HasData())
+	assert.Len(t, page.Data, 1)
+	assert.True(t, page.HasTotal())
+	assert.Equal(t, page.Total, 1)
+
+	assert.Equal(t, page.Data[0].Key, dummy1.Key)
+
 	// Update the dummy
 	dummy1.Content = "Updated Content 1"
 	result, err = c.persistence.Update(context.Background(), "", dummy1)

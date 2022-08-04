@@ -395,6 +395,7 @@ func (c *PostgresPersistence[T]) Close(ctx context.Context, correlationId string
 	}
 	c.opened = false
 	c.Client = nil
+	c.Connection = nil
 	return nil
 }
 
@@ -572,7 +573,6 @@ func (c *PostgresPersistence[T]) GetPageByFilter(ctx context.Context, correlatio
 	take := paging.GetTake((int64)(c.MaxPageSize))
 	pagingEnabled := paging.Total
 
-	// TODO::fixme
 	if len(filter) > 0 {
 		query += " WHERE " + filter
 	}
