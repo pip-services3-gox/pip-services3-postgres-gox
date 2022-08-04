@@ -334,6 +334,8 @@ func (c *PostgresPersistence[T]) Open(ctx context.Context, correlationId string)
 		return nil
 	}
 
+	c.isTerminated = make(chan struct{})
+
 	if c.Connection == nil {
 		c.Connection = c.createConnection(ctx)
 		c.localConnection = true
@@ -396,6 +398,7 @@ func (c *PostgresPersistence[T]) Close(ctx context.Context, correlationId string
 	c.opened = false
 	c.Client = nil
 	c.Connection = nil
+	c.isTerminated = nil
 	return nil
 }
 
