@@ -1,0 +1,1573 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#375EAB">
+
+  <title>persistence - Go Documentation Server</title>
+
+<link type="text/css" rel="stylesheet" href="../../lib/godoc/style.css">
+
+<script>window.initFuncs = [];</script>
+<script src="../../lib/godoc/jquery.js" defer></script>
+
+
+
+<script>var goVersion = "go1.18.5";</script>
+<script src="../../lib/godoc/godocs.js" defer></script>
+</head>
+<body>
+
+<div id='lowframe' style="position: fixed; bottom: 0; left: 0; height: 0; width: 100%; border-top: thin solid grey; background-color: white; overflow: auto;">
+...
+</div><!-- #lowframe -->
+
+<div id="topbar" class="wide"><div class="container">
+<div class="top-heading" id="heading-wide"><a href="../index.html">Go Documentation Server</a></div>
+<div class="top-heading" id="heading-narrow"><a href="../index.html">GoDoc</a></div>
+<a href="index.html#" id="menu-button"><span id="menu-button-arrow">&#9661;</span></a>
+<form method="GET" action="http://localhost:6060/search">
+<div id="menu">
+
+<span class="search-box"><input type="search" id="search" name="q" placeholder="Search" aria-label="Search" required><button type="submit"><span><!-- magnifying glass: --><svg width="24" height="24" viewBox="0 0 24 24"><title>submit search</title><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/><path d="M0 0h24v24H0z" fill="none"/></svg></span></button></span>
+</div>
+</form>
+
+</div></div>
+
+
+
+<div id="page" class="wide">
+<div class="container">
+
+
+  <h1>
+    Package persistence
+    <span class="text-muted"></span>
+  </h1>
+
+
+
+
+
+
+
+<div id="nav"></div>
+
+
+<!--
+	Copyright 2009 The Go Authors. All rights reserved.
+	Use of this source code is governed by a BSD-style
+	license that can be found in the LICENSE file.
+-->
+<!--
+	Note: Static (i.e., not template-generated) href and id
+	attributes start with "pkg-" to make it impossible for
+	them to conflict with generated attributes (some of which
+	correspond to Go identifiers).
+-->
+
+	<script>
+	document.ANALYSIS_DATA = null;
+	document.CALLGRAPH = null;
+	</script>
+
+	
+		
+		<div id="short-nav">
+			<dl>
+			<dd><code>import "persistence"</code></dd>
+			</dl>
+			<dl>
+			<dd><a href="index.html#pkg-overview" class="overviewLink">Overview</a></dd>
+			<dd><a href="index.html#pkg-index" class="indexLink">Index</a></dd>
+			
+			
+			</dl>
+		</div>
+		<!-- The package's Name is printed as title by the top-level template -->
+		<div id="pkg-overview" class="toggleVisible">
+			<div class="collapsed">
+				<h2 class="toggleButton" title="Click to show Overview section">Overview ▹</h2>
+			</div>
+			<div class="expanded">
+				<h2 class="toggleButton" title="Click to hide Overview section">Overview ▾</h2>
+				
+				
+			</div>
+		</div>
+
+		<div id="pkg-index" class="toggleVisible">
+		<div class="collapsed">
+			<h2 class="toggleButton" title="Click to show Index section">Index ▹</h2>
+		</div>
+		<div class="expanded">
+			<h2 class="toggleButton" title="Click to hide Index section">Index ▾</h2>
+
+		<!-- Table of contents for API; must be named manual-nav to turn off auto nav. -->
+			<div id="manual-nav">
+			<dl>
+			
+			
+			
+				
+				<dd><a href="index.html#GenerateObjectIdIfNotExists">func GenerateObjectIdIfNotExists[T any](obj any) T</a></dd>
+			
+				
+				<dd><a href="index.html#GenerateObjectMapIdIfNotExists">func GenerateObjectMapIdIfNotExists(objectMap map[string]any)</a></dd>
+			
+				
+				<dd><a href="index.html#GetObjectId">func GetObjectId[K any](obj any) (id K)</a></dd>
+			
+				
+				<dd><a href="index.html#ItemsToAnySlice">func ItemsToAnySlice[T any](items []T) []any</a></dd>
+			
+			
+				
+				<dd><a href="index.html#IPostgresPersistenceOverrides">type IPostgresPersistenceOverrides</a></dd>
+				
+				
+			
+				
+				<dd><a href="index.html#IdentifiableJsonPostgresPersistence">type IdentifiableJsonPostgresPersistence</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="index.html#InheritIdentifiableJsonPostgresPersistence">func InheritIdentifiableJsonPostgresPersistence[T any, K any](overrides IPostgresPersistenceOverrides[T], tableName string) *IdentifiableJsonPostgresPersistence[T, K]</a></dd>
+				
+				
+					
+					<dd>&nbsp; &nbsp; <a href="index.html#IdentifiableJsonPostgresPersistence.ConvertFromPublic">func (c *IdentifiableJsonPostgresPersistence[T, K]) ConvertFromPublic(value T) map[string]any</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="index.html#IdentifiableJsonPostgresPersistence.ConvertFromPublicPartial">func (c *IdentifiableJsonPostgresPersistence[T, K]) ConvertFromPublicPartial(value map[string]any) map[string]any</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="index.html#IdentifiableJsonPostgresPersistence.ConvertToPublic">func (c *IdentifiableJsonPostgresPersistence[T, K]) ConvertToPublic(rows pgx.Rows) T</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="index.html#IdentifiableJsonPostgresPersistence.EnsureTable">func (c *IdentifiableJsonPostgresPersistence[T, K]) EnsureTable(idType string, dataType string)</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="index.html#IdentifiableJsonPostgresPersistence.UpdatePartially">func (c *IdentifiableJsonPostgresPersistence[T, K]) UpdatePartially(ctx context.Context, correlationId string, id K, data cdata.AnyValueMap) (result T, err error)</a></dd>
+				
+			
+				
+				<dd><a href="index.html#IdentifiablePostgresPersistence">type IdentifiablePostgresPersistence</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="index.html#InheritIdentifiablePostgresPersistence">func InheritIdentifiablePostgresPersistence[T any, K any](overrides IPostgresPersistenceOverrides[T], tableName string) *IdentifiablePostgresPersistence[T, K]</a></dd>
+				
+				
+					
+					<dd>&nbsp; &nbsp; <a href="index.html#IdentifiablePostgresPersistence.Create">func (c *IdentifiablePostgresPersistence[T, K]) Create(ctx context.Context, correlationId string, item T) (result T, err error)</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="index.html#IdentifiablePostgresPersistence.DeleteById">func (c *IdentifiablePostgresPersistence[T, K]) DeleteById(ctx context.Context, correlationId string, id K) (result T, err error)</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="index.html#IdentifiablePostgresPersistence.DeleteByIds">func (c *IdentifiablePostgresPersistence[T, K]) DeleteByIds(ctx context.Context, correlationId string, ids []K) error</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="index.html#IdentifiablePostgresPersistence.GetListByIds">func (c *IdentifiablePostgresPersistence[T, K]) GetListByIds(ctx context.Context, correlationId string, ids []K) (items []T, err error)</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="index.html#IdentifiablePostgresPersistence.GetOneById">func (c *IdentifiablePostgresPersistence[T, K]) GetOneById(ctx context.Context, correlationId string, id K) (item T, err error)</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="index.html#IdentifiablePostgresPersistence.Set">func (c *IdentifiablePostgresPersistence[T, K]) Set(ctx context.Context, correlationId string, item T) (result T, err error)</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="index.html#IdentifiablePostgresPersistence.Update">func (c *IdentifiablePostgresPersistence[T, K]) Update(ctx context.Context, correlationId string, item T) (result T, err error)</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="index.html#IdentifiablePostgresPersistence.UpdatePartially">func (c *IdentifiablePostgresPersistence[T, K]) UpdatePartially(ctx context.Context, correlationId string, id K, data cdata.AnyValueMap) (result T, err error)</a></dd>
+				
+			
+				
+				<dd><a href="index.html#PostgresPersistence">type PostgresPersistence</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="index.html#InheritPostgresPersistence">func InheritPostgresPersistence[T any](overrides IPostgresPersistenceOverrides[T], tableName string) *PostgresPersistence[T]</a></dd>
+				
+				
+					
+					<dd>&nbsp; &nbsp; <a href="index.html#PostgresPersistence.Clear">func (c *PostgresPersistence[T]) Clear(ctx context.Context, correlationId string) error</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="index.html#PostgresPersistence.ClearSchema">func (c *PostgresPersistence[T]) ClearSchema()</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="index.html#PostgresPersistence.Close">func (c *PostgresPersistence[T]) Close(ctx context.Context, correlationId string) (err error)</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="index.html#PostgresPersistence.Configure">func (c *PostgresPersistence[T]) Configure(ctx context.Context, config *cconf.ConfigParams)</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="index.html#PostgresPersistence.ConvertFromPublic">func (c *PostgresPersistence[T]) ConvertFromPublic(value T) map[string]any</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="index.html#PostgresPersistence.ConvertFromPublicPartial">func (c *PostgresPersistence[T]) ConvertFromPublicPartial(value map[string]any) map[string]any</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="index.html#PostgresPersistence.ConvertToPublic">func (c *PostgresPersistence[T]) ConvertToPublic(rows pgx.Rows) T</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="index.html#PostgresPersistence.Create">func (c *PostgresPersistence[T]) Create(ctx context.Context, correlationId string, item T) (result T, err error)</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="index.html#PostgresPersistence.CreateSchema">func (c *PostgresPersistence[T]) CreateSchema(ctx context.Context, correlationId string) (err error)</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="index.html#PostgresPersistence.DefineSchema">func (c *PostgresPersistence[T]) DefineSchema()</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="index.html#PostgresPersistence.DeleteByFilter">func (c *PostgresPersistence[T]) DeleteByFilter(ctx context.Context, correlationId string, filter string) error</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="index.html#PostgresPersistence.EnsureIndex">func (c *PostgresPersistence[T]) EnsureIndex(name string, keys map[string]string, options map[string]string)</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="index.html#PostgresPersistence.EnsureSchema">func (c *PostgresPersistence[T]) EnsureSchema(schemaStatement string)</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="index.html#PostgresPersistence.GenerateColumns">func (c *PostgresPersistence[T]) GenerateColumns(columns []string) string</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="index.html#PostgresPersistence.GenerateColumnsAndValues">func (c *PostgresPersistence[T]) GenerateColumnsAndValues(objMap map[string]any) ([]string, []any)</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="index.html#PostgresPersistence.GenerateParameters">func (c *PostgresPersistence[T]) GenerateParameters(valuesCount int) string</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="index.html#PostgresPersistence.GenerateSetParameters">func (c *PostgresPersistence[T]) GenerateSetParameters(columns []string) string</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="index.html#PostgresPersistence.GetCountByFilter">func (c *PostgresPersistence[T]) GetCountByFilter(ctx context.Context, correlationId string, filter string) (int64, error)</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="index.html#PostgresPersistence.GetListByFilter">func (c *PostgresPersistence[T]) GetListByFilter(ctx context.Context, correlationId string, filter string, sort string, selection string) (items []T, err error)</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="index.html#PostgresPersistence.GetOneRandom">func (c *PostgresPersistence[T]) GetOneRandom(ctx context.Context, correlationId string, filter string) (item T, err error)</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="index.html#PostgresPersistence.GetPageByFilter">func (c *PostgresPersistence[T]) GetPageByFilter(ctx context.Context, correlationId string, filter string, paging cdata.PagingParams, sort string, selection string) (page cdata.DataPage[T], err error)</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="index.html#PostgresPersistence.IsOpen">func (c *PostgresPersistence[T]) IsOpen() bool</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="index.html#PostgresPersistence.IsTerminated">func (c *PostgresPersistence[T]) IsTerminated() bool</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="index.html#PostgresPersistence.Open">func (c *PostgresPersistence[T]) Open(ctx context.Context, correlationId string) (err error)</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="index.html#PostgresPersistence.QuoteIdentifier">func (c *PostgresPersistence[T]) QuoteIdentifier(value string) string</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="index.html#PostgresPersistence.QuotedTableName">func (c *PostgresPersistence[T]) QuotedTableName() string</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="index.html#PostgresPersistence.SetReferences">func (c *PostgresPersistence[T]) SetReferences(ctx context.Context, references cref.IReferences)</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="index.html#PostgresPersistence.UnsetReferences">func (c *PostgresPersistence[T]) UnsetReferences()</a></dd>
+				
+			
+			
+			</dl>
+			</div><!-- #manual-nav -->
+
+		
+
+		
+			<h3>Package files</h3>
+			<p>
+			<span style="font-size:90%">
+			
+				<a href="http://localhost:6060/src/persistence/IdentifiableJsonPostgresPersistence.go">IdentifiableJsonPostgresPersistence.go</a>
+			
+				<a href="http://localhost:6060/src/persistence/IdentifiablePostgresPersistence.go">IdentifiablePostgresPersistence.go</a>
+			
+				<a href="http://localhost:6060/src/persistence/PostgresPersistence.go">PostgresPersistence.go</a>
+			
+				<a href="http://localhost:6060/src/persistence/Utils.go">Utils.go</a>
+			
+			</span>
+			</p>
+		
+		</div><!-- .expanded -->
+		</div><!-- #pkg-index -->
+
+		
+
+		
+		
+		
+			
+			
+			<h2 id="GenerateObjectIdIfNotExists">func <a href="http://localhost:6060/src/persistence/Utils.go?s=596:646#L16">GenerateObjectIdIfNotExists</a>
+				<a class="permalink" href="index.html#GenerateObjectIdIfNotExists">&#xb6;</a>
+				
+				
+			</h2>
+			<pre>func GenerateObjectIdIfNotExists[T <a href="http://localhost:6060/pkg/builtin/#any">any</a>](obj <a href="http://localhost:6060/pkg/builtin/#any">any</a>) T</pre>
+			
+			
+			
+
+		
+			
+			
+			<h2 id="GenerateObjectMapIdIfNotExists">func <a href="http://localhost:6060/src/persistence/Utils.go?s=353:414#L8">GenerateObjectMapIdIfNotExists</a>
+				<a class="permalink" href="index.html#GenerateObjectMapIdIfNotExists">&#xb6;</a>
+				
+				
+			</h2>
+			<pre>func GenerateObjectMapIdIfNotExists(objectMap map[<a href="http://localhost:6060/pkg/builtin/#string">string</a>]<a href="http://localhost:6060/pkg/builtin/#any">any</a>)</pre>
+			
+			
+			
+
+		
+			
+			
+			<h2 id="GetObjectId">func <a href="http://localhost:6060/src/persistence/Utils.go?s=854:893#L27">GetObjectId</a>
+				<a class="permalink" href="index.html#GetObjectId">&#xb6;</a>
+				
+				
+			</h2>
+			<pre>func GetObjectId[K <a href="http://localhost:6060/pkg/builtin/#any">any</a>](obj <a href="http://localhost:6060/pkg/builtin/#any">any</a>) (id K)</pre>
+			
+			
+			
+
+		
+			
+			
+			<h2 id="ItemsToAnySlice">func <a href="http://localhost:6060/src/persistence/Utils.go?s=189:233#L1">ItemsToAnySlice</a>
+				<a class="permalink" href="index.html#ItemsToAnySlice">&#xb6;</a>
+				
+				
+			</h2>
+			<pre>func ItemsToAnySlice[T <a href="http://localhost:6060/pkg/builtin/#any">any</a>](items []T) []<a href="http://localhost:6060/pkg/builtin/#any">any</a></pre>
+			
+			
+			
+
+		
+		
+			
+			
+			<h2 id="IPostgresPersistenceOverrides">type <a href="http://localhost:6060/src/persistence/PostgresPersistence.go?s=653:862#L12">IPostgresPersistenceOverrides</a>
+				<a class="permalink" href="index.html#IPostgresPersistenceOverrides">&#xb6;</a>
+				
+				
+			</h2>
+			
+			<pre>type IPostgresPersistenceOverrides[T <a href="http://localhost:6060/pkg/builtin/#any">any</a>] interface {
+    DefineSchema()
+    ConvertFromPublic(item T) map[<a href="http://localhost:6060/pkg/builtin/#string">string</a>]<a href="http://localhost:6060/pkg/builtin/#any">any</a>
+    ConvertToPublic(item pgx.<a href="index.html#Rows">Rows</a>) T
+    ConvertFromPublicPartial(item map[<a href="http://localhost:6060/pkg/builtin/#string">string</a>]<a href="http://localhost:6060/pkg/builtin/#any">any</a>) map[<a href="http://localhost:6060/pkg/builtin/#string">string</a>]<a href="http://localhost:6060/pkg/builtin/#any">any</a>
+}</pre>
+
+			
+
+			
+
+			
+			
+			
+
+			
+
+			
+		
+			
+			
+			<h2 id="IdentifiableJsonPostgresPersistence">type <a href="http://localhost:6060/src/persistence/IdentifiableJsonPostgresPersistence.go?s=4120:4224#L82">IdentifiableJsonPostgresPersistence</a>
+				<a class="permalink" href="index.html#IdentifiableJsonPostgresPersistence">&#xb6;</a>
+				
+				
+			</h2>
+			<p>
+IdentifiableJsonPostgresPersistence is an abstract persistence component that stores data in PostgreSQL in JSON or JSONB fields
+and implements a number of CRUD operations over data items with unique ids.
+The data items must implement IIdentifiable interface.
+</p>
+<p>
+The JSON table has only two fields: id and data.
+</p>
+<p>
+In basic scenarios child classes shall only override getPageByFilter,
+getListByFilter or deleteByFilter operations with specific filter function.
+All other operations can be used out of the box.
+</p>
+<p>
+In complex scenarios child classes can implement additional operations by
+accessing c._collection and c._model properties.
+</p>
+<pre>### Configuration parameters ###
+
+	- collection:                  (optional) PostgreSQL collection name
+	- connection(s):
+		- discovery_key:             (optional) a key to retrieve the connection from IDiscovery
+		- host:                      host name or IP address
+		- port:                      port number (default: 27017)
+		- uri:                       resource URI or connection string with all parameters in it
+	- credential(s):
+		- store_key:                 (optional) a key to retrieve the credentials from ICredentialStore
+		- username:                  (optional) user name
+		- password:                  (optional) user password
+	- options:
+		- connect_timeout:      (optional) number of milliseconds to wait before timing out when connecting a new client (default: 0)
+		- idle_timeout:         (optional) number of milliseconds a client must sit idle in the pool and not be checked out (default: 10000)
+		- max_pool_size:        (optional) maximum number of clients the pool should contain (default: 10)
+
+### References ###
+	- \*:logger:\*:\*:1.0           (optional) ILogger components to pass log messages components to pass log messages
+	- \*:discovery:\*:\*:1.0        (optional) IDiscovery services
+	- \*:credential-store:\*:\*:1.0 (optional) Credential stores to resolve credentials
+
+### Example ###
+	type DummyJsonPostgresPersistence struct {
+		persist.IdentifiableJsonPostgresPersistence[fixtures.Dummy, string]
+	}
+
+	func NewDummyJsonPostgresPersistence() *DummyJsonPostgresPersistence {
+		c := &amp;DummyJsonPostgresPersistence{}
+		c.IdentifiableJsonPostgresPersistence = *persist.InheritIdentifiableJsonPostgresPersistence[fixtures.Dummy, string](c, &#34;dummies_json&#34;)
+		return c
+	}
+
+	func (c *DummyJsonPostgresPersistence) DefineSchema() {
+		c.ClearSchema()
+		c.IdentifiableJsonPostgresPersistence.DefineSchema()
+		c.EnsureTable(&#34;&#34;, &#34;&#34;)
+		c.EnsureIndex(c.TableName+&#34;_key&#34;, map[string]string{&#34;(data-&gt;&#39;key&#39;)&#34;: &#34;1&#34;}, map[string]string{&#34;unique&#34;: &#34;true&#34;})
+	}
+
+	func (c *DummyJsonPostgresPersistence) GetPageByFilter(ctx context.Context, correlationId string,
+		filter cdata.FilterParams, paging cdata.PagingParams) (page cdata.DataPage[fixtures.Dummy], err error) {
+
+		key, ok := filter.GetAsNullableString(&#34;Key&#34;)
+		filterObj := &#34;&#34;
+		if ok &amp;&amp; key != &#34;&#34; {
+			filterObj += &#34;data-&gt;key=&#39;&#34; + key + &#34;&#39;&#34;
+		}
+
+		return c.IdentifiableJsonPostgresPersistence.GetPageByFilter(ctx, correlationId,
+			filterObj, paging,
+			&#34;&#34;, &#34;&#34;,
+		)
+	}
+
+	func (c *DummyJsonPostgresPersistence) GetCountByFilter(ctx context.Context, correlationId string,
+		filter cdata.FilterParams) (count int64, err error) {
+
+		filterObj := &#34;&#34;
+		if key, ok := filter.GetAsNullableString(&#34;Key&#34;); ok &amp;&amp; key != &#34;&#34; {
+			filterObj += &#34;data-&gt;key=&#39;&#34; + key + &#34;&#39;&#34;
+		}
+
+		return c.IdentifiableJsonPostgresPersistence.GetCountByFilter(ctx, correlationId, filterObj)
+	}
+
+	func (c *DummyJsonPostgresPersistence) GetOneRandom(ctx context.Context, correlationId string) (item fixtures.Dummy, err error) {
+		return c.IdentifiableJsonPostgresPersistence.GetOneRandom(ctx, correlationId, &#34;&#34;)
+	}
+</pre>
+
+			<pre>type IdentifiableJsonPostgresPersistence[T <a href="http://localhost:6060/pkg/builtin/#any">any</a>, K <a href="http://localhost:6060/pkg/builtin/#any">any</a>] struct {
+    <a href="index.html#IdentifiablePostgresPersistence">IdentifiablePostgresPersistence</a>[T, K]
+}
+</pre>
+
+			
+
+			
+
+			
+			
+			
+
+			
+				
+				<h3 id="InheritIdentifiableJsonPostgresPersistence">func <a href="http://localhost:6060/src/persistence/IdentifiableJsonPostgresPersistence.go?s=4439:4605#L90">InheritIdentifiableJsonPostgresPersistence</a>
+					<a class="permalink" href="index.html#InheritIdentifiableJsonPostgresPersistence">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func InheritIdentifiableJsonPostgresPersistence[T <a href="http://localhost:6060/pkg/builtin/#any">any</a>, K <a href="http://localhost:6060/pkg/builtin/#any">any</a>](overrides <a href="index.html#IPostgresPersistenceOverrides">IPostgresPersistenceOverrides</a>[T], tableName <a href="http://localhost:6060/pkg/builtin/#string">string</a>) *<a href="index.html#IdentifiableJsonPostgresPersistence">IdentifiableJsonPostgresPersistence</a>[T, K]</pre>
+				<p>
+InheritIdentifiableJsonPostgresPersistence creates a new instance of the persistence component.
+</p>
+<pre>Parameters:
+	- overrides References to override virtual methods
+	- tableName    (optional) a table name.
+</pre>
+
+				
+				
+			
+
+			
+				
+				<h3 id="IdentifiableJsonPostgresPersistence.ConvertFromPublic">func (*IdentifiableJsonPostgresPersistence[T, K]) <a href="http://localhost:6060/src/persistence/IdentifiableJsonPostgresPersistence.go?s=6248:6341#L146">ConvertFromPublic</a>
+					<a class="permalink" href="index.html#IdentifiableJsonPostgresPersistence.ConvertFromPublic">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (c *<a href="index.html#IdentifiableJsonPostgresPersistence">IdentifiableJsonPostgresPersistence</a>[T, K]) ConvertFromPublic(value T) map[<a href="http://localhost:6060/pkg/builtin/#string">string</a>]<a href="http://localhost:6060/pkg/builtin/#any">any</a></pre>
+				<p>
+ConvertFromPublic convert object value from public to internal format.
+</p>
+<pre>	Parameters:
+   - value     an object in public format to convert.
+</pre>
+<p>
+Returns converted object in internal format.
+</p>
+
+				
+				
+				
+			
+				
+				<h3 id="IdentifiableJsonPostgresPersistence.ConvertFromPublicPartial">func (*IdentifiableJsonPostgresPersistence[T, K]) <a href="http://localhost:6060/src/persistence/IdentifiableJsonPostgresPersistence.go?s=6653:6766#L160">ConvertFromPublicPartial</a>
+					<a class="permalink" href="index.html#IdentifiableJsonPostgresPersistence.ConvertFromPublicPartial">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (c *<a href="index.html#IdentifiableJsonPostgresPersistence">IdentifiableJsonPostgresPersistence</a>[T, K]) ConvertFromPublicPartial(value map[<a href="http://localhost:6060/pkg/builtin/#string">string</a>]<a href="http://localhost:6060/pkg/builtin/#any">any</a>) map[<a href="http://localhost:6060/pkg/builtin/#string">string</a>]<a href="http://localhost:6060/pkg/builtin/#any">any</a></pre>
+				<p>
+ConvertFromPublicPartial convert object value from public to internal format.
+</p>
+<pre>Parameters:
+	- value     an object in public format to convert.
+Returns: converted object in internal format.
+</pre>
+
+				
+				
+				
+			
+				
+				<h3 id="IdentifiableJsonPostgresPersistence.ConvertToPublic">func (*IdentifiableJsonPostgresPersistence[T, K]) <a href="http://localhost:6060/src/persistence/IdentifiableJsonPostgresPersistence.go?s=5503:5587#L117">ConvertToPublic</a>
+					<a class="permalink" href="index.html#IdentifiableJsonPostgresPersistence.ConvertToPublic">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (c *<a href="index.html#IdentifiableJsonPostgresPersistence">IdentifiableJsonPostgresPersistence</a>[T, K]) ConvertToPublic(rows pgx.<a href="index.html#Rows">Rows</a>) T</pre>
+				<p>
+ConvertToPublic converts object value from internal to public format.
+</p>
+<pre>Parameters:
+	- value an object in internal format to convert.
+Returns: converted object in public format.
+</pre>
+
+				
+				
+				
+			
+				
+				<h3 id="IdentifiableJsonPostgresPersistence.EnsureTable">func (*IdentifiableJsonPostgresPersistence[T, K]) <a href="http://localhost:6060/src/persistence/IdentifiableJsonPostgresPersistence.go?s=4973:5068#L100">EnsureTable</a>
+					<a class="permalink" href="index.html#IdentifiableJsonPostgresPersistence.EnsureTable">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (c *<a href="index.html#IdentifiableJsonPostgresPersistence">IdentifiableJsonPostgresPersistence</a>[T, K]) EnsureTable(idType <a href="http://localhost:6060/pkg/builtin/#string">string</a>, dataType <a href="http://localhost:6060/pkg/builtin/#string">string</a>)</pre>
+				<p>
+EnsureTable Adds DML statement to automatically create JSON(B) table
+</p>
+<pre>	Parameters:
+  - idType type of the id column (default: TEXT)
+  - dataType type of the data column (default: JSONB)
+</pre>
+
+				
+				
+				
+			
+				
+				<h3 id="IdentifiableJsonPostgresPersistence.UpdatePartially">func (*IdentifiableJsonPostgresPersistence[T, K]) <a href="http://localhost:6060/src/persistence/IdentifiableJsonPostgresPersistence.go?s=7282:7445#L173">UpdatePartially</a>
+					<a class="permalink" href="index.html#IdentifiableJsonPostgresPersistence.UpdatePartially">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (c *<a href="index.html#IdentifiableJsonPostgresPersistence">IdentifiableJsonPostgresPersistence</a>[T, K]) UpdatePartially(ctx <a href="http://localhost:6060/pkg/context/">context</a>.<a href="http://localhost:6060/pkg/context/#Context">Context</a>, correlationId <a href="http://localhost:6060/pkg/builtin/#string">string</a>,
+    id K, data <a href="http://localhost:6060/pkg/github.com/pip-services3-gox/pip-services3-commons-gox/data/">cdata</a>.<a href="http://localhost:6060/pkg/github.com/pip-services3-gox/pip-services3-commons-gox/data/#AnyValueMap">AnyValueMap</a>) (result T, err <a href="http://localhost:6060/pkg/builtin/#error">error</a>)</pre>
+				<p>
+UpdatePartially updates only few selected fields in a data item.
+</p>
+<pre>Parameters:
+	- ctx context.Context
+	- correlation_id    (optional) transaction id to trace execution through call chain.
+	- id                an id of data item to be updated.
+	- data              a map with fields to be updated.
+</pre>
+<p>
+Returns: receives updated item or error.
+</p>
+
+				
+				
+				
+			
+		
+			
+			
+			<h2 id="IdentifiablePostgresPersistence">type <a href="http://localhost:6060/src/persistence/IdentifiablePostgresPersistence.go?s=4251:4337#L84">IdentifiablePostgresPersistence</a>
+				<a class="permalink" href="index.html#IdentifiablePostgresPersistence">&#xb6;</a>
+				
+				
+			</h2>
+			<p>
+IdentifiablePostgresPersistence Abstract persistence component that stores data in PostgreSQL
+and implements a number of CRUD operations over data items with unique ids.
+The data items must implement IIdentifiable interface.
+</p>
+<p>
+In basic scenarios child classes shall only override getPageByFilter,
+getListByFilter or deleteByFilter operations with specific filter function.
+All other operations can be used out of the box.
+</p>
+<p>
+In complex scenarios child classes can implement additional operations by
+accessing c._collection and c._model properties.
+</p>
+<pre>### Configuration parameters ###
+	- collection:               (optional) PostgreSQL collection name
+	- connection(s):
+		- discovery_key:        (optional) a key to retrieve the connection from IDiscovery
+		- host:                 host name or IP address
+		- port:                 port number (default: 27017)
+		- uri:                  resource URI or connection string with all parameters in it
+	- credential(s):
+		- store_key:            (optional) a key to retrieve the credentials from ICredentialStore
+		- username:             (optional) user name
+		- password:             (optional) user password
+	- options:
+		- connect_timeout:      (optional) number of milliseconds to wait before timing out when connecting a new client (default: 0)
+		- idle_timeout:         (optional) number of milliseconds a client must sit idle in the pool and not be checked out (default: 10000)
+		- max_pool_size:        (optional) maximum number of clients the pool should contain (default: 10)
+
+### References ###
+	- \*:logger:\*:\*:1.0           (optional) ILogger components to pass log messages components to pass log messages
+	- \*:discovery:\*:\*:1.0        (optional) IDiscovery services
+	- \*:credential-store:\*:\*:1.0 (optional) Credential stores to resolve credentials
+*
+### Example ###
+	type DummyPostgresPersistence struct {
+		persist.IdentifiablePostgresPersistence[fixtures.Dummy, string]
+	}
+
+	func NewDummyPostgresPersistence() *DummyPostgresPersistence {
+		c := &amp;DummyPostgresPersistence{}
+		c.IdentifiablePostgresPersistence = *persist.InheritIdentifiablePostgresPersistence[fixtures.Dummy, string](c, &#34;dummies&#34;)
+		return c
+	}
+
+	func (c *DummyPostgresPersistence) DefineSchema() {
+		c.ClearSchema()
+		c.IdentifiablePostgresPersistence.DefineSchema()
+		// Row name must be in double quotes for properly case!!!
+		c.EnsureSchema(&#34;CREATE TABLE &#34; + c.QuotedTableName() + &#34; (\&#34;id\&#34; TEXT PRIMARY KEY, \&#34;key\&#34; TEXT, \&#34;content\&#34; TEXT)&#34;)
+		c.EnsureIndex(c.IdentifiablePostgresPersistence.TableName+&#34;_key&#34;, map[string]string{&#34;key&#34;: &#34;1&#34;}, map[string]string{&#34;unique&#34;: &#34;true&#34;})
+	}
+
+	func (c *DummyPostgresPersistence) GetPageByFilter(ctx context.Context, correlationId string,
+		filter cdata.FilterParams, paging cdata.PagingParams) (page cdata.DataPage[fixtures.Dummy], err error) {
+
+		key, ok := filter.GetAsNullableString(&#34;Key&#34;)
+		filterObj := &#34;&#34;
+		if ok &amp;&amp; key != &#34;&#34; {
+			filterObj += &#34;key=&#39;&#34; + key + &#34;&#39;&#34;
+		}
+		sorting := &#34;&#34;
+
+		return c.IdentifiablePostgresPersistence.GetPageByFilter(ctx, correlationId,
+			filterObj, paging,
+			sorting, &#34;&#34;,
+		)
+	}
+
+	func (c *DummyPostgresPersistence) GetCountByFilter(ctx context.Context, correlationId string,
+		filter cdata.FilterParams) (count int64, err error) {
+
+		key, ok := filter.GetAsNullableString(&#34;Key&#34;)
+		filterObj := &#34;&#34;
+		if ok &amp;&amp; key != &#34;&#34; {
+			filterObj += &#34;key=&#39;&#34; + key + &#34;&#39;&#34;
+		}
+		return c.IdentifiablePostgresPersistence.GetCountByFilter(ctx, correlationId, filterObj)
+	}
+
+	func (c *DummyPostgresPersistence) GetOneRandom(ctx context.Context, correlationId string) (item fixtures.Dummy, err error) {
+		return c.IdentifiablePostgresPersistence.GetOneRandom(ctx, correlationId, &#34;&#34;)
+	}
+</pre>
+
+			<pre>type IdentifiablePostgresPersistence[T <a href="http://localhost:6060/pkg/builtin/#any">any</a>, K <a href="http://localhost:6060/pkg/builtin/#any">any</a>] struct {
+    *<a href="index.html#PostgresPersistence">PostgresPersistence</a>[T]
+}
+</pre>
+
+			
+
+			
+
+			
+			
+			
+
+			
+				
+				<h3 id="InheritIdentifiablePostgresPersistence">func <a href="http://localhost:6060/src/persistence/IdentifiablePostgresPersistence.go?s=4574:4732#L93">InheritIdentifiablePostgresPersistence</a>
+					<a class="permalink" href="index.html#InheritIdentifiablePostgresPersistence">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func InheritIdentifiablePostgresPersistence[T <a href="http://localhost:6060/pkg/builtin/#any">any</a>, K <a href="http://localhost:6060/pkg/builtin/#any">any</a>](overrides <a href="index.html#IPostgresPersistenceOverrides">IPostgresPersistenceOverrides</a>[T], tableName <a href="http://localhost:6060/pkg/builtin/#string">string</a>) *<a href="index.html#IdentifiablePostgresPersistence">IdentifiablePostgresPersistence</a>[T, K]</pre>
+				<p>
+InheritIdentifiablePostgresPersistence creates a new instance of the persistence component.
+</p>
+<pre>Parameters:
+	- ctx context.Context
+	- overrides References to override virtual methods
+	- tableName    (optional) a table name.
+</pre>
+
+				
+				
+			
+
+			
+				
+				<h3 id="IdentifiablePostgresPersistence.Create">func (*IdentifiablePostgresPersistence[T, K]) <a href="http://localhost:6060/src/persistence/IdentifiablePostgresPersistence.go?s=7211:7338#L177">Create</a>
+					<a class="permalink" href="index.html#IdentifiablePostgresPersistence.Create">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (c *<a href="index.html#IdentifiablePostgresPersistence">IdentifiablePostgresPersistence</a>[T, K]) Create(ctx <a href="http://localhost:6060/pkg/context/">context</a>.<a href="http://localhost:6060/pkg/context/#Context">Context</a>, correlationId <a href="http://localhost:6060/pkg/builtin/#string">string</a>, item T) (result T, err <a href="http://localhost:6060/pkg/builtin/#error">error</a>)</pre>
+				<p>
+Create a data item.
+</p>
+<pre>Parameters:
+	- ctx context.Context
+	- correlation_id    (optional) transaction id to trace execution through call chain.
+	- item              an item to be created.
+Returns: (optional)  created item or error.
+</pre>
+
+				
+				
+				
+			
+				
+				<h3 id="IdentifiablePostgresPersistence.DeleteById">func (*IdentifiablePostgresPersistence[T, K]) <a href="http://localhost:6060/src/persistence/IdentifiablePostgresPersistence.go?s=11573:11702#L302">DeleteById</a>
+					<a class="permalink" href="index.html#IdentifiablePostgresPersistence.DeleteById">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (c *<a href="index.html#IdentifiablePostgresPersistence">IdentifiablePostgresPersistence</a>[T, K]) DeleteById(ctx <a href="http://localhost:6060/pkg/context/">context</a>.<a href="http://localhost:6060/pkg/context/#Context">Context</a>, correlationId <a href="http://localhost:6060/pkg/builtin/#string">string</a>, id K) (result T, err <a href="http://localhost:6060/pkg/builtin/#error">error</a>)</pre>
+				<p>
+DeleteById deletes a data item by its unique id.
+</p>
+<pre>Parameters:
+	- ctx context.Context
+	- correlation_id    (optional) transaction id to trace execution through call chain.
+	- id                an id of the item to be deleted
+Returns: (optional)  deleted item or error.
+</pre>
+
+				
+				
+				
+			
+				
+				<h3 id="IdentifiablePostgresPersistence.DeleteByIds">func (*IdentifiablePostgresPersistence[T, K]) <a href="http://localhost:6060/src/persistence/IdentifiablePostgresPersistence.go?s=12496:12613#L330">DeleteByIds</a>
+					<a class="permalink" href="index.html#IdentifiablePostgresPersistence.DeleteByIds">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (c *<a href="index.html#IdentifiablePostgresPersistence">IdentifiablePostgresPersistence</a>[T, K]) DeleteByIds(ctx <a href="http://localhost:6060/pkg/context/">context</a>.<a href="http://localhost:6060/pkg/context/#Context">Context</a>, correlationId <a href="http://localhost:6060/pkg/builtin/#string">string</a>, ids []K) <a href="http://localhost:6060/pkg/builtin/#error">error</a></pre>
+				<p>
+DeleteByIds deletes multiple data items by their unique ids.
+</p>
+<pre>Parameters:
+	- ctx context.Context
+	- correlationId     (optional) transaction id to trace execution through call chain.
+	- ids                of data items to be deleted.
+Returns: (optional)  error or null for success.
+</pre>
+
+				
+				
+				
+			
+				
+				<h3 id="IdentifiablePostgresPersistence.GetListByIds">func (*IdentifiablePostgresPersistence[T, K]) <a href="http://localhost:6060/src/persistence/IdentifiablePostgresPersistence.go?s=5217:5353#L110">GetListByIds</a>
+					<a class="permalink" href="index.html#IdentifiablePostgresPersistence.GetListByIds">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (c *<a href="index.html#IdentifiablePostgresPersistence">IdentifiablePostgresPersistence</a>[T, K]) GetListByIds(ctx <a href="http://localhost:6060/pkg/context/">context</a>.<a href="http://localhost:6060/pkg/context/#Context">Context</a>, correlationId <a href="http://localhost:6060/pkg/builtin/#string">string</a>,
+    ids []K) (items []T, err <a href="http://localhost:6060/pkg/builtin/#error">error</a>)</pre>
+				<p>
+GetListByIds gets a list of data items retrieved by given unique ids.
+</p>
+<pre>Parameters:
+	- ctx context.Context
+	- correlationId     (optional) transaction id to trace execution through call chain.
+	- ids of data items to be retrieved
+Returns: a data list or error.
+</pre>
+
+				
+				
+				
+			
+				
+				<h3 id="IdentifiablePostgresPersistence.GetOneById">func (*IdentifiablePostgresPersistence[T, K]) <a href="http://localhost:6060/src/persistence/IdentifiablePostgresPersistence.go?s=6291:6418#L148">GetOneById</a>
+					<a class="permalink" href="index.html#IdentifiablePostgresPersistence.GetOneById">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (c *<a href="index.html#IdentifiablePostgresPersistence">IdentifiablePostgresPersistence</a>[T, K]) GetOneById(ctx <a href="http://localhost:6060/pkg/context/">context</a>.<a href="http://localhost:6060/pkg/context/#Context">Context</a>, correlationId <a href="http://localhost:6060/pkg/builtin/#string">string</a>, id K) (item T, err <a href="http://localhost:6060/pkg/builtin/#error">error</a>)</pre>
+				<p>
+GetOneById gets a data item by its unique id.
+</p>
+<pre>Parameters:
+	- ctx context.Context
+	- correlationId     (optional) transaction id to trace execution through call chain.
+	- id                an id of data item to be retrieved.
+</pre>
+<p>
+Returns: data item or error.
+</p>
+
+				
+				
+				
+			
+				
+				<h3 id="IdentifiablePostgresPersistence.Set">func (*IdentifiablePostgresPersistence[T, K]) <a href="http://localhost:6060/src/persistence/IdentifiablePostgresPersistence.go?s=7812:7936#L191">Set</a>
+					<a class="permalink" href="index.html#IdentifiablePostgresPersistence.Set">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (c *<a href="index.html#IdentifiablePostgresPersistence">IdentifiablePostgresPersistence</a>[T, K]) Set(ctx <a href="http://localhost:6060/pkg/context/">context</a>.<a href="http://localhost:6060/pkg/context/#Context">Context</a>, correlationId <a href="http://localhost:6060/pkg/builtin/#string">string</a>, item T) (result T, err <a href="http://localhost:6060/pkg/builtin/#error">error</a>)</pre>
+				<p>
+Set a data item. If the data item exists it updates it,
+otherwise it creates a new data item.
+</p>
+<pre>Parameters:
+	- ctx context.Context
+	- correlation_id    (optional) transaction id to trace execution through call chain.
+	- item              an item to be set.
+Returns: (optional)  updated item or error.
+</pre>
+
+				
+				
+				
+			
+				
+				<h3 id="IdentifiablePostgresPersistence.Update">func (*IdentifiablePostgresPersistence[T, K]) <a href="http://localhost:6060/src/persistence/IdentifiablePostgresPersistence.go?s=9106:9233#L233">Update</a>
+					<a class="permalink" href="index.html#IdentifiablePostgresPersistence.Update">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (c *<a href="index.html#IdentifiablePostgresPersistence">IdentifiablePostgresPersistence</a>[T, K]) Update(ctx <a href="http://localhost:6060/pkg/context/">context</a>.<a href="http://localhost:6060/pkg/context/#Context">Context</a>, correlationId <a href="http://localhost:6060/pkg/builtin/#string">string</a>, item T) (result T, err <a href="http://localhost:6060/pkg/builtin/#error">error</a>)</pre>
+				<p>
+Update a data item.
+</p>
+<pre>Parameters:
+	- ctx context.Context
+	- correlation_id    (optional) transaction id to trace execution through call chain.
+	- item              an item to be updated.
+Returns          (optional)  updated item or error.
+</pre>
+
+				
+				
+				
+			
+				
+				<h3 id="IdentifiablePostgresPersistence.UpdatePartially">func (*IdentifiablePostgresPersistence[T, K]) <a href="http://localhost:6060/src/persistence/IdentifiablePostgresPersistence.go?s=10357:10515#L268">UpdatePartially</a>
+					<a class="permalink" href="index.html#IdentifiablePostgresPersistence.UpdatePartially">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (c *<a href="index.html#IdentifiablePostgresPersistence">IdentifiablePostgresPersistence</a>[T, K]) UpdatePartially(ctx <a href="http://localhost:6060/pkg/context/">context</a>.<a href="http://localhost:6060/pkg/context/#Context">Context</a>, correlationId <a href="http://localhost:6060/pkg/builtin/#string">string</a>, id K, data <a href="http://localhost:6060/pkg/github.com/pip-services3-gox/pip-services3-commons-gox/data/">cdata</a>.<a href="http://localhost:6060/pkg/github.com/pip-services3-gox/pip-services3-commons-gox/data/#AnyValueMap">AnyValueMap</a>) (result T, err <a href="http://localhost:6060/pkg/builtin/#error">error</a>)</pre>
+				<p>
+UpdatePartially updates only few selected fields in a data item.
+</p>
+<pre>Parameters:
+	- ctx context.Context
+	- correlation_id    (optional) transaction id to trace execution through call chain.
+	- id                an id of data item to be updated.
+	- data              a map with fields to be updated.
+Returns: updated item or error.
+</pre>
+
+				
+				
+				
+			
+		
+			
+			
+			<h2 id="PostgresPersistence">type <a href="http://localhost:6060/src/persistence/PostgresPersistence.go?s=2628:3765#L48">PostgresPersistence</a>
+				<a class="permalink" href="index.html#PostgresPersistence">&#xb6;</a>
+				
+				
+			</h2>
+			<p>
+PostgresPersistence Abstract persistence component that stores data in PostgreSQL using plain driver.
+</p>
+<p>
+This is the most basic persistence component that is only
+able to store data items of any type. Specific CRUD operations
+over the data items must be implemented in child classes by
+accessing c._db or c._collection properties.
+</p>
+<pre>### Configuration parameters ###
+	- collection:                  (optional) PostgreSQL collection name
+	- schema:                  	   (optional) PostgreSQL schema, default &#34;public&#34;
+	- connection(s):
+		- discovery_key:             (optional) a key to retrieve the connection from IDiscovery
+		- host:                      host name or IP address
+		- port:                      port number (default: 27017)
+		- uri:                       resource URI or connection string with all parameters in it
+	- credential(s):
+		- store_key:                 (optional) a key to retrieve the credentials from ICredentialStore
+		- username:                  (optional) user name
+		- password:                  (optional) user password
+	- options:
+		- connect_timeout:      (optional) number of milliseconds to wait before timing out when connecting a new client (default: 0)
+		- idle_timeout:         (optional) number of milliseconds a client must sit idle in the pool and not be checked out (default: 10000)
+		- max_pool_size:        (optional) maximum number of clients the pool should contain (default: 10)
+
+### References ###
+	- \*:logger:\*:\*:1.0           (optional) ILogger components to pass log messages
+	- \*:discovery:\*:\*:1.0        (optional) IDiscovery services
+	- \*:credential-store:\*:\*:1.0 (optional) Credential stores to resolve credentials
+</pre>
+
+			<pre>type PostgresPersistence[T <a href="http://localhost:6060/pkg/builtin/#any">any</a>] struct {
+<span id="PostgresPersistence.Overrides"></span>    Overrides <a href="index.html#IPostgresPersistenceOverrides">IPostgresPersistenceOverrides</a>[T]
+    <span class="comment">// Defines general JSON convertors</span>
+<span id="PostgresPersistence.JsonConvertor"></span>    JsonConvertor    <a href="http://localhost:6060/pkg/github.com/pip-services3-gox/pip-services3-commons-gox/convert/">cconv</a>.<a href="http://localhost:6060/pkg/github.com/pip-services3-gox/pip-services3-commons-gox/convert/#IJSONEngine">IJSONEngine</a>[T]
+<span id="PostgresPersistence.JsonMapConvertor"></span>    JsonMapConvertor <a href="http://localhost:6060/pkg/github.com/pip-services3-gox/pip-services3-commons-gox/convert/">cconv</a>.<a href="http://localhost:6060/pkg/github.com/pip-services3-gox/pip-services3-commons-gox/convert/#IJSONEngine">IJSONEngine</a>[map[<a href="http://localhost:6060/pkg/builtin/#string">string</a>]<a href="http://localhost:6060/pkg/builtin/#any">any</a>]
+
+    <span class="comment">//The dependency resolver.</span>
+<span id="PostgresPersistence.DependencyResolver"></span>    DependencyResolver *<a href="http://localhost:6060/pkg/github.com/pip-services3-gox/pip-services3-commons-gox/refer/">cref</a>.<a href="http://localhost:6060/pkg/github.com/pip-services3-gox/pip-services3-commons-gox/refer/#DependencyResolver">DependencyResolver</a>
+    <span class="comment">//The logger.</span>
+<span id="PostgresPersistence.Logger"></span>    Logger *<a href="http://localhost:6060/pkg/github.com/pip-services3-gox/pip-services3-components-gox/log/">clog</a>.<a href="http://localhost:6060/pkg/github.com/pip-services3-gox/pip-services3-components-gox/log/#CompositeLogger">CompositeLogger</a>
+    <span class="comment">//The PostgreSQL connection component.</span>
+<span id="PostgresPersistence.Connection"></span>    Connection *<a href="http://localhost:6060/pkg/github.com/pip-services3-gox/pip-services3-postgres-gox/connect/">conn</a>.<a href="http://localhost:6060/pkg/github.com/pip-services3-gox/pip-services3-postgres-gox/connect/#PostgresConnection">PostgresConnection</a>
+    <span class="comment">//The PostgreSQL connection pool object.</span>
+<span id="PostgresPersistence.Client"></span>    Client *<a href="http://localhost:6060/pkg/github.com/jackc/pgx/v4/pgxpool/">pgxpool</a>.<a href="http://localhost:6060/pkg/github.com/jackc/pgx/v4/pgxpool/#Pool">Pool</a>
+    <span class="comment">//The PostgreSQL database name.</span>
+<span id="PostgresPersistence.DatabaseName"></span>    DatabaseName <a href="http://localhost:6060/pkg/builtin/#string">string</a>
+    <span class="comment">//The PostgreSQL database schema name. If not set use &#34;public&#34; by default</span>
+<span id="PostgresPersistence.SchemaName"></span>    SchemaName <a href="http://localhost:6060/pkg/builtin/#string">string</a>
+    <span class="comment">//The PostgreSQL table object.</span>
+<span id="PostgresPersistence.TableName"></span>    TableName   <a href="http://localhost:6060/pkg/builtin/#string">string</a>
+<span id="PostgresPersistence.MaxPageSize"></span>    MaxPageSize <a href="http://localhost:6060/pkg/builtin/#int">int</a>
+    <span class="comment">// contains filtered or unexported fields</span>
+}
+</pre>
+
+			
+
+			
+
+			
+			
+			
+
+			
+				
+				<h3 id="InheritPostgresPersistence">func <a href="http://localhost:6060/src/persistence/PostgresPersistence.go?s=3990:4114#L90">InheritPostgresPersistence</a>
+					<a class="permalink" href="index.html#InheritPostgresPersistence">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func InheritPostgresPersistence[T <a href="http://localhost:6060/pkg/builtin/#any">any</a>](overrides <a href="index.html#IPostgresPersistenceOverrides">IPostgresPersistenceOverrides</a>[T], tableName <a href="http://localhost:6060/pkg/builtin/#string">string</a>) *<a href="index.html#PostgresPersistence">PostgresPersistence</a>[T]</pre>
+				<p>
+InheritPostgresPersistence creates a new instance of the persistence component.
+</p>
+<pre>Parameters:
+	- ctx context.Context
+	- overrides References to override virtual methods
+	- tableName    (optional) a table name.
+</pre>
+
+				
+				
+			
+
+			
+				
+				<h3 id="PostgresPersistence.Clear">func (*PostgresPersistence[T]) <a href="http://localhost:6060/src/persistence/PostgresPersistence.go?s=12930:13017#L396">Clear</a>
+					<a class="permalink" href="index.html#PostgresPersistence.Clear">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (c *<a href="index.html#PostgresPersistence">PostgresPersistence</a>[T]) Clear(ctx <a href="http://localhost:6060/pkg/context/">context</a>.<a href="http://localhost:6060/pkg/context/#Context">Context</a>, correlationId <a href="http://localhost:6060/pkg/builtin/#string">string</a>) <a href="http://localhost:6060/pkg/builtin/#error">error</a></pre>
+				<p>
+Clear component state.
+</p>
+<pre>Parameters:
+	- ctx context.Context
+	- correlationId 	(optional) transaction id to trace execution through call chain.
+Returns: error or nil no errors occured.
+</pre>
+
+				
+				
+				
+			
+				
+				<h3 id="PostgresPersistence.ClearSchema">func (*PostgresPersistence[T]) <a href="http://localhost:6060/src/persistence/PostgresPersistence.go?s=8177:8223#L231">ClearSchema</a>
+					<a class="permalink" href="index.html#PostgresPersistence.ClearSchema">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (c *<a href="index.html#PostgresPersistence">PostgresPersistence</a>[T]) ClearSchema()</pre>
+				<p>
+ClearSchema clears all auto-created objects
+</p>
+
+				
+				
+				
+			
+				
+				<h3 id="PostgresPersistence.Close">func (*PostgresPersistence[T]) <a href="http://localhost:6060/src/persistence/PostgresPersistence.go?s=12294:12387#L370">Close</a>
+					<a class="permalink" href="index.html#PostgresPersistence.Close">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (c *<a href="index.html#PostgresPersistence">PostgresPersistence</a>[T]) Close(ctx <a href="http://localhost:6060/pkg/context/">context</a>.<a href="http://localhost:6060/pkg/context/#Context">Context</a>, correlationId <a href="http://localhost:6060/pkg/builtin/#string">string</a>) (err <a href="http://localhost:6060/pkg/builtin/#error">error</a>)</pre>
+				<p>
+Close component and frees used resources.
+</p>
+<pre>Parameters:
+	- ctx context.Context
+	- correlationId (optional) transaction id to trace execution through call chain.
+Returns: error or nil no errors occurred.
+</pre>
+
+				
+				
+				
+			
+				
+				<h3 id="PostgresPersistence.Configure">func (*PostgresPersistence[T]) <a href="http://localhost:6060/src/persistence/PostgresPersistence.go?s=5119:5210#L122">Configure</a>
+					<a class="permalink" href="index.html#PostgresPersistence.Configure">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (c *<a href="index.html#PostgresPersistence">PostgresPersistence</a>[T]) Configure(ctx <a href="http://localhost:6060/pkg/context/">context</a>.<a href="http://localhost:6060/pkg/context/#Context">Context</a>, config *<a href="http://localhost:6060/pkg/github.com/pip-services3-gox/pip-services3-commons-gox/config/">cconf</a>.<a href="http://localhost:6060/pkg/github.com/pip-services3-gox/pip-services3-commons-gox/config/#ConfigParams">ConfigParams</a>)</pre>
+				<p>
+Configure component by passing configuration parameters.
+</p>
+<pre>Parameters:
+	- ctx context.Context
+	- config configuration parameters to be set.
+</pre>
+
+				
+				
+				
+			
+				
+				<h3 id="PostgresPersistence.ConvertFromPublic">func (*PostgresPersistence[T]) <a href="http://localhost:6060/src/persistence/PostgresPersistence.go?s=9181:9255#L263">ConvertFromPublic</a>
+					<a class="permalink" href="index.html#PostgresPersistence.ConvertFromPublic">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (c *<a href="index.html#PostgresPersistence">PostgresPersistence</a>[T]) ConvertFromPublic(value T) map[<a href="http://localhost:6060/pkg/builtin/#string">string</a>]<a href="http://localhost:6060/pkg/builtin/#any">any</a></pre>
+				<p>
+ConvertFromPublic сonvert object value from func (c * PostgresPersistence) to internal format.
+</p>
+<pre>Parameters:
+	- value an object in func (c * PostgresPersistence) format to convert.
+Returns: converted object in internal format.
+</pre>
+
+				
+				
+				
+			
+				
+				<h3 id="PostgresPersistence.ConvertFromPublicPartial">func (*PostgresPersistence[T]) <a href="http://localhost:6060/src/persistence/PostgresPersistence.go?s=9563:9657#L273">ConvertFromPublicPartial</a>
+					<a class="permalink" href="index.html#PostgresPersistence.ConvertFromPublicPartial">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (c *<a href="index.html#PostgresPersistence">PostgresPersistence</a>[T]) ConvertFromPublicPartial(value map[<a href="http://localhost:6060/pkg/builtin/#string">string</a>]<a href="http://localhost:6060/pkg/builtin/#any">any</a>) map[<a href="http://localhost:6060/pkg/builtin/#string">string</a>]<a href="http://localhost:6060/pkg/builtin/#any">any</a></pre>
+				<p>
+ConvertFromPublicPartial converts the given object from the public partial format.
+</p>
+<pre>Parameters:
+	- value the object to convert from the public partial format.
+Returns: the initial object.
+</pre>
+
+				
+				
+				
+			
+				
+				<h3 id="PostgresPersistence.ConvertToPublic">func (*PostgresPersistence[T]) <a href="http://localhost:6060/src/persistence/PostgresPersistence.go?s=8498:8563#L239">ConvertToPublic</a>
+					<a class="permalink" href="index.html#PostgresPersistence.ConvertToPublic">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (c *<a href="index.html#PostgresPersistence">PostgresPersistence</a>[T]) ConvertToPublic(rows pgx.<a href="index.html#Rows">Rows</a>) T</pre>
+				<p>
+ConvertToPublic converts object value from internal to func (c * PostgresPersistence) format.
+</p>
+<pre>Parameters:
+	- value an object in internal format to convert.
+Returns: converted object in func (c * PostgresPersistence) format.
+</pre>
+
+				
+				
+				
+			
+				
+				<h3 id="PostgresPersistence.Create">func (*PostgresPersistence[T]) <a href="http://localhost:6060/src/persistence/PostgresPersistence.go?s=23685:23797#L758">Create</a>
+					<a class="permalink" href="index.html#PostgresPersistence.Create">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (c *<a href="index.html#PostgresPersistence">PostgresPersistence</a>[T]) Create(ctx <a href="http://localhost:6060/pkg/context/">context</a>.<a href="http://localhost:6060/pkg/context/#Context">Context</a>, correlationId <a href="http://localhost:6060/pkg/builtin/#string">string</a>, item T) (result T, err <a href="http://localhost:6060/pkg/builtin/#error">error</a>)</pre>
+				<p>
+Create creates a data item.
+</p>
+<pre>Parameters:
+	- ctx context.Context
+	- correlation_id    (optional) transaction id to trace execution through call chain.
+	- item              an item to be created.
+Returns: (optional) callback function that receives created item or error.
+</pre>
+
+				
+				
+				
+			
+				
+				<h3 id="PostgresPersistence.CreateSchema">func (*PostgresPersistence[T]) <a href="http://localhost:6060/src/persistence/PostgresPersistence.go?s=13380:13480#L412">CreateSchema</a>
+					<a class="permalink" href="index.html#PostgresPersistence.CreateSchema">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (c *<a href="index.html#PostgresPersistence">PostgresPersistence</a>[T]) CreateSchema(ctx <a href="http://localhost:6060/pkg/context/">context</a>.<a href="http://localhost:6060/pkg/context/#Context">Context</a>, correlationId <a href="http://localhost:6060/pkg/builtin/#string">string</a>) (err <a href="http://localhost:6060/pkg/builtin/#error">error</a>)</pre>
+				
+				
+				
+				
+			
+				
+				<h3 id="PostgresPersistence.DefineSchema">func (*PostgresPersistence[T]) <a href="http://localhost:6060/src/persistence/PostgresPersistence.go?s=7661:7708#L215">DefineSchema</a>
+					<a class="permalink" href="index.html#PostgresPersistence.DefineSchema">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (c *<a href="index.html#PostgresPersistence">PostgresPersistence</a>[T]) DefineSchema()</pre>
+				<p>
+DefineSchema a database schema for this persistence, have to call in child class
+</p>
+
+				
+				
+				
+			
+				
+				<h3 id="PostgresPersistence.DeleteByFilter">func (*PostgresPersistence[T]) <a href="http://localhost:6060/src/persistence/PostgresPersistence.go?s=24927:25038#L793">DeleteByFilter</a>
+					<a class="permalink" href="index.html#PostgresPersistence.DeleteByFilter">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (c *<a href="index.html#PostgresPersistence">PostgresPersistence</a>[T]) DeleteByFilter(ctx <a href="http://localhost:6060/pkg/context/">context</a>.<a href="http://localhost:6060/pkg/context/#Context">Context</a>, correlationId <a href="http://localhost:6060/pkg/builtin/#string">string</a>, filter <a href="http://localhost:6060/pkg/builtin/#string">string</a>) <a href="http://localhost:6060/pkg/builtin/#error">error</a></pre>
+				<p>
+DeleteByFilter deletes data items that match to a given filter.
+This method shall be called by a func (c * PostgresPersistence) deleteByFilter method from child class that
+receives FilterParams and converts them into a filter function.
+</p>
+<pre>Parameters:
+	- ctx context.Context
+	- correlationId     (optional) transaction id to trace execution through call chain.
+	- filter            (optional) a filter JSON object.
+Returns: error or nil for success.
+</pre>
+
+				
+				
+				
+			
+				
+				<h3 id="PostgresPersistence.EnsureIndex">func (*PostgresPersistence[T]) <a href="http://localhost:6060/src/persistence/PostgresPersistence.go?s=6912:7020#L179">EnsureIndex</a>
+					<a class="permalink" href="index.html#PostgresPersistence.EnsureIndex">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (c *<a href="index.html#PostgresPersistence">PostgresPersistence</a>[T]) EnsureIndex(name <a href="http://localhost:6060/pkg/builtin/#string">string</a>, keys map[<a href="http://localhost:6060/pkg/builtin/#string">string</a>]<a href="http://localhost:6060/pkg/builtin/#string">string</a>, options map[<a href="http://localhost:6060/pkg/builtin/#string">string</a>]<a href="http://localhost:6060/pkg/builtin/#string">string</a>)</pre>
+				<p>
+EnsureIndex adds index definition to create it on opening
+</p>
+<pre>Parameters:
+	- keys index keys (fields)
+	- options index options
+</pre>
+
+				
+				
+				
+			
+				
+				<h3 id="PostgresPersistence.EnsureSchema">func (*PostgresPersistence[T]) <a href="http://localhost:6060/src/persistence/PostgresPersistence.go?s=7989:8058#L226">EnsureSchema</a>
+					<a class="permalink" href="index.html#PostgresPersistence.EnsureSchema">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (c *<a href="index.html#PostgresPersistence">PostgresPersistence</a>[T]) EnsureSchema(schemaStatement <a href="http://localhost:6060/pkg/builtin/#string">string</a>)</pre>
+				<p>
+EnsureSchema adds a statement to schema definition
+</p>
+<pre>	Parameters:
+  - schemaStatement a statement to be added to the schema
+</pre>
+
+				
+				
+				
+			
+				
+				<h3 id="PostgresPersistence.GenerateColumns">func (*PostgresPersistence[T]) <a href="http://localhost:6060/src/persistence/PostgresPersistence.go?s=14750:14823#L464">GenerateColumns</a>
+					<a class="permalink" href="index.html#PostgresPersistence.GenerateColumns">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (c *<a href="index.html#PostgresPersistence">PostgresPersistence</a>[T]) GenerateColumns(columns []<a href="http://localhost:6060/pkg/builtin/#string">string</a>) <a href="http://localhost:6060/pkg/builtin/#string">string</a></pre>
+				<p>
+GenerateColumns generates a list of column names to use in SQL statements like: &#34;column1,column2,column3&#34;
+</p>
+<pre>Parameters:
+	- columns an array with column values
+Returns: a generated list of column names
+</pre>
+
+				
+				
+				
+			
+				
+				<h3 id="PostgresPersistence.GenerateColumnsAndValues">func (*PostgresPersistence[T]) <a href="http://localhost:6060/src/persistence/PostgresPersistence.go?s=16509:16607#L526">GenerateColumnsAndValues</a>
+					<a class="permalink" href="index.html#PostgresPersistence.GenerateColumnsAndValues">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (c *<a href="index.html#PostgresPersistence">PostgresPersistence</a>[T]) GenerateColumnsAndValues(objMap map[<a href="http://localhost:6060/pkg/builtin/#string">string</a>]<a href="http://localhost:6060/pkg/builtin/#any">any</a>) ([]<a href="http://localhost:6060/pkg/builtin/#string">string</a>, []<a href="http://localhost:6060/pkg/builtin/#any">any</a>)</pre>
+				<p>
+GenerateColumnsAndValues generates a list of column parameters
+</p>
+<pre>Parameters:
+	- values an array with column values or a key-value map
+Returns: a generated list of column values
+</pre>
+
+				
+				
+				
+			
+				
+				<h3 id="PostgresPersistence.GenerateParameters">func (*PostgresPersistence[T]) <a href="http://localhost:6060/src/persistence/PostgresPersistence.go?s=15294:15369#L484">GenerateParameters</a>
+					<a class="permalink" href="index.html#PostgresPersistence.GenerateParameters">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (c *<a href="index.html#PostgresPersistence">PostgresPersistence</a>[T]) GenerateParameters(valuesCount <a href="http://localhost:6060/pkg/builtin/#int">int</a>) <a href="http://localhost:6060/pkg/builtin/#string">string</a></pre>
+				<p>
+GenerateParameters generates a list of value parameters to use in SQL statements like: &#34;$1,$2,$3&#34;
+</p>
+<pre>Parameters:
+	- values an array with column values or a key-value map
+Returns: a generated list of value parameters
+</pre>
+
+				
+				
+				
+			
+				
+				<h3 id="PostgresPersistence.GenerateSetParameters">func (*PostgresPersistence[T]) <a href="http://localhost:6060/src/persistence/PostgresPersistence.go?s=15904:15983#L505">GenerateSetParameters</a>
+					<a class="permalink" href="index.html#PostgresPersistence.GenerateSetParameters">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (c *<a href="index.html#PostgresPersistence">PostgresPersistence</a>[T]) GenerateSetParameters(columns []<a href="http://localhost:6060/pkg/builtin/#string">string</a>) <a href="http://localhost:6060/pkg/builtin/#string">string</a></pre>
+				<p>
+GenerateSetParameters generates a list of column sets to use in UPDATE statements like: column1=$1,column2=$2
+</p>
+<pre>Parameters:
+	- values an array with column values or a key-value map
+Returns: a generated list of column sets
+</pre>
+
+				
+				
+				
+			
+				
+				<h3 id="PostgresPersistence.GetCountByFilter">func (*PostgresPersistence[T]) <a href="http://localhost:6060/src/persistence/PostgresPersistence.go?s=19592:19715#L619">GetCountByFilter</a>
+					<a class="permalink" href="index.html#PostgresPersistence.GetCountByFilter">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (c *<a href="index.html#PostgresPersistence">PostgresPersistence</a>[T]) GetCountByFilter(ctx <a href="http://localhost:6060/pkg/context/">context</a>.<a href="http://localhost:6060/pkg/context/#Context">Context</a>, correlationId <a href="http://localhost:6060/pkg/builtin/#string">string</a>,
+    filter <a href="http://localhost:6060/pkg/builtin/#string">string</a>) (<a href="http://localhost:6060/pkg/builtin/#int64">int64</a>, <a href="http://localhost:6060/pkg/builtin/#error">error</a>)</pre>
+				<p>
+GetCountByFilter gets a number of data items retrieved by a given filter.
+This method shall be called by a func (c * PostgresPersistence) getCountByFilter method from child class that
+receives FilterParams and converts them into a filter function.
+</p>
+<pre>Parameters:
+	- ctx context.Context
+	- correlationId     (optional) transaction id to trace execution through call chain.
+	- filter            (optional) a filter JSON object
+Returns: data page or error.
+</pre>
+
+				
+				
+				
+			
+				
+				<h3 id="PostgresPersistence.GetListByFilter">func (*PostgresPersistence[T]) <a href="http://localhost:6060/src/persistence/PostgresPersistence.go?s=20889:21050#L660">GetListByFilter</a>
+					<a class="permalink" href="index.html#PostgresPersistence.GetListByFilter">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (c *<a href="index.html#PostgresPersistence">PostgresPersistence</a>[T]) GetListByFilter(ctx <a href="http://localhost:6060/pkg/context/">context</a>.<a href="http://localhost:6060/pkg/context/#Context">Context</a>, correlationId <a href="http://localhost:6060/pkg/builtin/#string">string</a>,
+    filter <a href="http://localhost:6060/pkg/builtin/#string">string</a>, sort <a href="http://localhost:6060/pkg/builtin/#string">string</a>, selection <a href="http://localhost:6060/pkg/builtin/#string">string</a>) (items []T, err <a href="http://localhost:6060/pkg/builtin/#error">error</a>)</pre>
+				<p>
+GetListByFilter gets a list of data items retrieved by a given filter and sorted according to sort parameters.
+This method shall be called by a func (c * PostgresPersistence) getListByFilter method from child class that
+receives FilterParams and converts them into a filter function.
+</p>
+<pre>Parameters:
+	- ctx context.Context
+	- correlationId    (optional) transaction id to trace execution through call chain.
+	- filter           (optional) a filter JSON object
+	- paging           (optional) paging parameters
+	- sort             (optional) sorting JSON object
+	- select           (optional) projection JSON object
+Returns: data list or error.
+</pre>
+
+				
+				
+				
+			
+				
+				<h3 id="PostgresPersistence.GetOneRandom">func (*PostgresPersistence[T]) <a href="http://localhost:6060/src/persistence/PostgresPersistence.go?s=22277:22400#L710">GetOneRandom</a>
+					<a class="permalink" href="index.html#PostgresPersistence.GetOneRandom">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (c *<a href="index.html#PostgresPersistence">PostgresPersistence</a>[T]) GetOneRandom(ctx <a href="http://localhost:6060/pkg/context/">context</a>.<a href="http://localhost:6060/pkg/context/#Context">Context</a>, correlationId <a href="http://localhost:6060/pkg/builtin/#string">string</a>, filter <a href="http://localhost:6060/pkg/builtin/#string">string</a>) (item T, err <a href="http://localhost:6060/pkg/builtin/#error">error</a>)</pre>
+				<p>
+GetOneRandom gets a random item from items that match to a given filter.
+This method shall be called by a func (c * PostgresPersistence) getOneRandom method from child class that
+receives FilterParams and converts them into a filter function.
+</p>
+<pre>Parameters:
+	- ctx context.Context
+	- correlationId     (optional) transaction id to trace execution through call chain.
+	- filter            (optional) a filter JSON object
+Returns: random item or error.
+</pre>
+
+				
+				
+				
+			
+				
+				<h3 id="PostgresPersistence.GetPageByFilter">func (*PostgresPersistence[T]) <a href="http://localhost:6060/src/persistence/PostgresPersistence.go?s=17556:17757#L552">GetPageByFilter</a>
+					<a class="permalink" href="index.html#PostgresPersistence.GetPageByFilter">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (c *<a href="index.html#PostgresPersistence">PostgresPersistence</a>[T]) GetPageByFilter(ctx <a href="http://localhost:6060/pkg/context/">context</a>.<a href="http://localhost:6060/pkg/context/#Context">Context</a>, correlationId <a href="http://localhost:6060/pkg/builtin/#string">string</a>,
+    filter <a href="http://localhost:6060/pkg/builtin/#string">string</a>, paging <a href="http://localhost:6060/pkg/github.com/pip-services3-gox/pip-services3-commons-gox/data/">cdata</a>.<a href="http://localhost:6060/pkg/github.com/pip-services3-gox/pip-services3-commons-gox/data/#PagingParams">PagingParams</a>, sort <a href="http://localhost:6060/pkg/builtin/#string">string</a>, selection <a href="http://localhost:6060/pkg/builtin/#string">string</a>) (page <a href="http://localhost:6060/pkg/github.com/pip-services3-gox/pip-services3-commons-gox/data/">cdata</a>.<a href="http://localhost:6060/pkg/github.com/pip-services3-gox/pip-services3-commons-gox/data/#DataPage">DataPage</a>[T], err <a href="http://localhost:6060/pkg/builtin/#error">error</a>)</pre>
+				<p>
+GetPageByFilter gets a page of data items retrieved by a given filter and sorted according to sort parameters.
+This method shall be called by a func (c * PostgresPersistence) getPageByFilter method from child class that
+receives FilterParams and converts them into a filter function.
+</p>
+<pre>Parameters:
+	- ctx context.Context
+	- correlationId     (optional) transaction id to trace execution through call chain.
+	- filter            (optional) a filter JSON object
+	- paging            (optional) paging parameters
+	- sort              (optional) sorting JSON object
+	- select            (optional) projection JSON object
+Returns: receives a data page or error.
+</pre>
+
+				
+				
+				
+			
+				
+				<h3 id="PostgresPersistence.IsOpen">func (*PostgresPersistence[T]) <a href="http://localhost:6060/src/persistence/PostgresPersistence.go?s=10353:10399#L299">IsOpen</a>
+					<a class="permalink" href="index.html#PostgresPersistence.IsOpen">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (c *<a href="index.html#PostgresPersistence">PostgresPersistence</a>[T]) IsOpen() <a href="http://localhost:6060/pkg/builtin/#bool">bool</a></pre>
+				<p>
+IsOpen checks if the component is opened.
+</p>
+<pre>Returns: true if the component has been opened and false otherwise.
+</pre>
+
+				
+				
+				
+			
+				
+				<h3 id="PostgresPersistence.IsTerminated">func (*PostgresPersistence[T]) <a href="http://localhost:6060/src/persistence/PostgresPersistence.go?s=10561:10613#L305">IsTerminated</a>
+					<a class="permalink" href="index.html#PostgresPersistence.IsTerminated">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (c *<a href="index.html#PostgresPersistence">PostgresPersistence</a>[T]) IsTerminated() <a href="http://localhost:6060/pkg/builtin/#bool">bool</a></pre>
+				<p>
+IsTerminated checks if the wee need to terminate process before close component.
+</p>
+<pre>Returns: true if you need terminate your processes.
+</pre>
+
+				
+				
+				
+			
+				
+				<h3 id="PostgresPersistence.Open">func (*PostgresPersistence[T]) <a href="http://localhost:6060/src/persistence/PostgresPersistence.go?s=10928:11020#L322">Open</a>
+					<a class="permalink" href="index.html#PostgresPersistence.Open">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (c *<a href="index.html#PostgresPersistence">PostgresPersistence</a>[T]) Open(ctx <a href="http://localhost:6060/pkg/context/">context</a>.<a href="http://localhost:6060/pkg/context/#Context">Context</a>, correlationId <a href="http://localhost:6060/pkg/builtin/#string">string</a>) (err <a href="http://localhost:6060/pkg/builtin/#error">error</a>)</pre>
+				<p>
+Open the component.
+</p>
+<pre>Parameters:
+	- ctx context.Context
+	- correlationId (optional) transaction id to trace execution through call chain.
+Returns: error or nil no errors occurred.
+</pre>
+
+				
+				
+				
+			
+				
+				<h3 id="PostgresPersistence.QuoteIdentifier">func (*PostgresPersistence[T]) <a href="http://localhost:6060/src/persistence/PostgresPersistence.go?s=9766:9835#L279">QuoteIdentifier</a>
+					<a class="permalink" href="index.html#PostgresPersistence.QuoteIdentifier">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (c *<a href="index.html#PostgresPersistence">PostgresPersistence</a>[T]) QuoteIdentifier(value <a href="http://localhost:6060/pkg/builtin/#string">string</a>) <a href="http://localhost:6060/pkg/builtin/#string">string</a></pre>
+				
+				
+				
+				
+			
+				
+				<h3 id="PostgresPersistence.QuotedTableName">func (*PostgresPersistence[T]) <a href="http://localhost:6060/src/persistence/PostgresPersistence.go?s=10024:10081#L290">QuotedTableName</a>
+					<a class="permalink" href="index.html#PostgresPersistence.QuotedTableName">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (c *<a href="index.html#PostgresPersistence">PostgresPersistence</a>[T]) QuotedTableName() <a href="http://localhost:6060/pkg/builtin/#string">string</a></pre>
+				<p>
+QuotedTableName return quoted SchemaName with TableName (&#34;schema&#34;.&#34;table&#34;)
+</p>
+
+				
+				
+				
+			
+				
+				<h3 id="PostgresPersistence.SetReferences">func (*PostgresPersistence[T]) <a href="http://localhost:6060/src/persistence/PostgresPersistence.go?s=5774:5870#L138">SetReferences</a>
+					<a class="permalink" href="index.html#PostgresPersistence.SetReferences">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (c *<a href="index.html#PostgresPersistence">PostgresPersistence</a>[T]) SetReferences(ctx <a href="http://localhost:6060/pkg/context/">context</a>.<a href="http://localhost:6060/pkg/context/#Context">Context</a>, references <a href="http://localhost:6060/pkg/github.com/pip-services3-gox/pip-services3-commons-gox/refer/">cref</a>.<a href="http://localhost:6060/pkg/github.com/pip-services3-gox/pip-services3-commons-gox/refer/#IReferences">IReferences</a>)</pre>
+				<p>
+SetReferences to dependent components.
+</p>
+<pre>Parameters:
+	- ctx context.Context
+	- references references to locate the component dependencies.
+</pre>
+
+				
+				
+				
+			
+				
+				<h3 id="PostgresPersistence.UnsetReferences">func (*PostgresPersistence[T]) <a href="http://localhost:6060/src/persistence/PostgresPersistence.go?s=6399:6449#L160">UnsetReferences</a>
+					<a class="permalink" href="index.html#PostgresPersistence.UnsetReferences">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (c *<a href="index.html#PostgresPersistence">PostgresPersistence</a>[T]) UnsetReferences()</pre>
+				<p>
+UnsetReferences (clears) previously set references to dependent components.
+</p>
+
+				
+				
+				
+			
+		
+	
+
+	
+
+
+
+
+
+
+
+<div id="footer">
+Build version go1.18.5.<br>
+Except as <a href="https://developers.google.com/site-policies#restrictions">noted</a>,
+the content of this page is licensed under the
+Creative Commons Attribution 3.0 License,
+and code is licensed under a <a href="http://localhost:6060/LICENSE">BSD license</a>.<br>
+<a href="https://golang.org/doc/tos.html">Terms of Service</a> |
+<a href="https://www.google.com/intl/en/policies/privacy/">Privacy Policy</a>
+</div>
+
+</div><!-- .container -->
+</div><!-- #page -->
+</body>
+</html>
