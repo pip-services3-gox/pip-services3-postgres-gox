@@ -2,6 +2,7 @@ package persistence
 
 import (
 	"context"
+
 	"github.com/jackc/pgx/v4"
 	cconv "github.com/pip-services3-gox/pip-services3-commons-gox/convert"
 	cdata "github.com/pip-services3-gox/pip-services3-commons-gox/data"
@@ -20,7 +21,7 @@ import (
 // In complex scenarios child classes can implement additional operations by
 // accessing c._collection and c._model properties.
 //
-//	### Configuration parameters ###
+//	Configuration parameters
 //
 //		- collection:                  (optional) PostgreSQL collection name
 //		- connection(s):
@@ -37,12 +38,12 @@ import (
 //			- idle_timeout:         (optional) number of milliseconds a client must sit idle in the pool and not be checked out (default: 10000)
 //			- max_pool_size:        (optional) maximum number of clients the pool should contain (default: 10)
 //
-//	### References ###
-//		- \*:logger:\*:\*:1.0           (optional) ILogger components to pass log messages components to pass log messages
-//		- \*:discovery:\*:\*:1.0        (optional) IDiscovery services
-//		- \*:credential-store:\*:\*:1.0 (optional) Credential stores to resolve credentials
+//	References
+//		- *:logger:*:*:1.0           (optional) ILogger components to pass log messages components to pass log messages
+//		- *:discovery:*:*:1.0        (optional) IDiscovery services
+//		- *:credential-store:*:*:1.0 (optional) Credential stores to resolve credentials
 //
-//	### Example ###
+//	Example:
 //		type DummyJsonPostgresPersistence struct {
 //			persist.IdentifiableJsonPostgresPersistence[fixtures.Dummy, string]
 //		}
@@ -90,7 +91,7 @@ import (
 //			return c.IdentifiableJsonPostgresPersistence.GetOneRandom(ctx, correlationId, "")
 //		}
 type IdentifiableJsonPostgresPersistence[T any, K any] struct {
-	IdentifiablePostgresPersistence[T, K]
+	*IdentifiablePostgresPersistence[T, K]
 }
 
 // InheritIdentifiableJsonPostgresPersistence creates a new instance of the persistence component.
@@ -99,7 +100,7 @@ type IdentifiableJsonPostgresPersistence[T any, K any] struct {
 //		- tableName    (optional) a table name.
 func InheritIdentifiableJsonPostgresPersistence[T any, K any](overrides IPostgresPersistenceOverrides[T], tableName string) *IdentifiableJsonPostgresPersistence[T, K] {
 	c := &IdentifiableJsonPostgresPersistence[T, K]{}
-	c.IdentifiablePostgresPersistence = *InheritIdentifiablePostgresPersistence[T, K](overrides, tableName)
+	c.IdentifiablePostgresPersistence = InheritIdentifiablePostgresPersistence[T, K](overrides, tableName)
 	return c
 }
 
@@ -124,12 +125,12 @@ func (c *IdentifiableJsonPostgresPersistence[T, K]) EnsureTable(idType string, d
 //	Parameters:
 //		- value an object in internal format to convert.
 //	Returns: converted object in public format.
-func (c *IdentifiableJsonPostgresPersistence[T, K]) ConvertToPublic(rows pgx.Rows) T {
-
+func (c *IdentifiableJsonPostgresPersistence[T, K]) ConvertToPublic(rows pgx.Rows) (T, error) {
 	var defaultValue T
+
 	values, valErr := rows.Values()
 	if valErr != nil || values == nil {
-		return defaultValue
+		return defaultValue, valErr
 	}
 	columns := rows.FieldDescriptions()
 
@@ -144,32 +145,42 @@ func (c *IdentifiableJsonPostgresPersistence[T, K]) ConvertToPublic(rows pgx.Row
 		item = buf
 	}
 
-	_buf, _ := cconv.JsonConverter.ToJson(item)
-	_item, _ := c.IdentifiablePostgresPersistence.JsonConvertor.FromJson(_buf)
-	return _item
+	_buf, toJsonErr := cconv.JsonConverter.ToJson(item)
+	if toJsonErr != nil {
+		return defaultValue, toJsonErr
+	}
+
+	_item, fromJsonErr := c.IdentifiablePostgresPersistence.JsonConvertor.FromJson(_buf)
+	return _item, fromJsonErr
 }
 
 // ConvertFromPublic convert object value from public to internal format.
 //	Parameters:
 //    - value     an object in public format to convert.
 // Returns converted object in internal format.
-func (c *IdentifiableJsonPostgresPersistence[T, K]) ConvertFromPublic(value T) map[string]any {
+func (c *IdentifiableJsonPostgresPersistence[T, K]) ConvertFromPublic(value T) (map[string]any, error) {
 	id := GetObjectId[K](value)
 
 	result := map[string]any{
 		"id":   id,
 		"data": value,
 	}
-	return result
+	return result, nil
 }
 
 // ConvertFromPublicPartial convert object value from public to internal format.
 //	Parameters:
 //		- value     an object in public format to convert.
 //	Returns: converted object in internal format.
-func (c *IdentifiableJsonPostgresPersistence[T, K]) ConvertFromPublicPartial(value map[string]any) map[string]any {
-	buf, _ := cconv.JsonConverter.ToJson(value)
-	item, _ := c.IdentifiablePostgresPersistence.JsonConvertor.FromJson(buf)
+func (c *IdentifiableJsonPostgresPersistence[T, K]) ConvertFromPublicPartial(value map[string]any) (map[string]any, error) {
+	buf, toJsonErr := cconv.JsonConverter.ToJson(value)
+	if toJsonErr != nil {
+		return nil, toJsonErr
+	}
+	item, fromJsonErr := c.IdentifiablePostgresPersistence.JsonConvertor.FromJson(buf)
+	if toJsonErr != nil {
+		return nil, fromJsonErr
+	}
 	return c.ConvertFromPublic(item)
 }
 
@@ -198,7 +209,10 @@ func (c *IdentifiableJsonPostgresPersistence[T, K]) UpdatePartially(ctx context.
 
 	_values, err := rows.Values()
 	if err == nil && len(_values) > 0 {
-		result = c.IdentifiablePostgresPersistence.Overrides.ConvertToPublic(rows)
+		result, convErr := c.IdentifiablePostgresPersistence.Overrides.ConvertToPublic(rows)
+		if convErr != nil {
+			return result, convErr
+		}
 		c.IdentifiablePostgresPersistence.Logger.Trace(ctx, correlationId, "Updated partially in %s with id = %s", c.IdentifiablePostgresPersistence.TableName, id)
 		return result, nil
 	}

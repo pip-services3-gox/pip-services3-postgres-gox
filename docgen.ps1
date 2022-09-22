@@ -6,13 +6,14 @@ $ErrorActionPreference = "Stop"
 # Generate image and container names using the data in the "component.json" file
 $component = Get-Content -Path "$PSScriptRoot/component.json" | ConvertFrom-Json
 
-$docImage="$($component.registry)/$($component.name):$($component.version)-$($component.build)-docs"
-$container=$component.name
+$docImage = "$($component.registry)/$($component.name):$($component.version)-$($component.build)-docs"
+$container = $component.name
 
 # Remove build files
 if (Test-Path "$PSScriptRoot/docs") {
     Remove-Item -Recurse -Force -Path "$PSScriptRoot/docs/*"
-} else {
+}
+else {
     $null = New-Item -ItemType Directory -Force -Path "$PSScriptRoot/docs"
 }
 

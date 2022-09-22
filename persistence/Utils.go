@@ -1,14 +1,15 @@
 package persistence
 
 import (
+	"reflect"
+
 	cdata "github.com/pip-services3-gox/pip-services3-commons-gox/data"
 	cpersist "github.com/pip-services3-gox/pip-services3-data-gox/persistence"
-	"reflect"
 )
 
 func ItemsToAnySlice[T any](items []T) []any {
 	ln := len(items)
-	result := make([]any, ln, ln)
+	result := make([]any, ln)
 	for i := range items {
 		result[i] = items[i]
 	}

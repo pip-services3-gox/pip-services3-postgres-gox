@@ -2,9 +2,10 @@ package connect
 
 import (
 	"context"
-	cerr "github.com/pip-services3-gox/pip-services3-commons-gox/errors"
 	"math"
 	"time"
+
+	cerr "github.com/pip-services3-gox/pip-services3-commons-gox/errors"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 	cconf "github.com/pip-services3-gox/pip-services3-commons-gox/config"
@@ -17,7 +18,7 @@ import (
 // By defining a connection and sharing it through multiple persistence components
 // you can reduce number of used database connections.
 //
-//	### Configuration parameters ###
+//	Configuration parameters
 //		- connection(s):
 //			- discovery_key:        (optional) a key to retrieve the connection from IDiscovery
 //			- host:                 host name or IP address
@@ -32,10 +33,10 @@ import (
 //			- idle_timeout:         (optional) number of milliseconds a client must sit idle in the pool and not be checked out (default: 10000)
 //			- max_pool_size:        (optional) maximum number of clients the pool should contain (default: 10)
 //
-//	### References ###
-//		- \*:logger:\*:\*:1.0           (optional) ILogger components to pass log messages
-//		- \*:discovery:\*:\*:1.0        (optional) IDiscovery services
-//		- \*:credential-store:\*:\*:1.0 (optional) Credential stores to resolve credentials
+//	References
+//		- *:logger:*:*:1.0           (optional) ILogger components to pass log messages
+//		- *:discovery:*:*:1.0        (optional) IDiscovery services
+//		- *:credential-store:*:*:1.0 (optional) Credential stores to resolve credentials
 type PostgresConnection struct {
 	defaultConfig *cconf.ConfigParams
 	// The logger.

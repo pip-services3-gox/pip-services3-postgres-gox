@@ -2,18 +2,19 @@ package test
 
 import (
 	"context"
+
 	cdata "github.com/pip-services3-gox/pip-services3-commons-gox/data"
 	persist "github.com/pip-services3-gox/pip-services3-postgres-gox/persistence"
 	"github.com/pip-services3-gox/pip-services3-postgres-gox/test/fixtures"
 )
 
 type DummyJsonPostgresPersistence struct {
-	persist.IdentifiableJsonPostgresPersistence[fixtures.Dummy, string]
+	*persist.IdentifiableJsonPostgresPersistence[fixtures.Dummy, string]
 }
 
 func NewDummyJsonPostgresPersistence() *DummyJsonPostgresPersistence {
 	c := &DummyJsonPostgresPersistence{}
-	c.IdentifiableJsonPostgresPersistence = *persist.InheritIdentifiableJsonPostgresPersistence[fixtures.Dummy, string](c, "dummies_json")
+	c.IdentifiableJsonPostgresPersistence = persist.InheritIdentifiableJsonPostgresPersistence[fixtures.Dummy, string](c, "dummies_json")
 	return c
 }
 

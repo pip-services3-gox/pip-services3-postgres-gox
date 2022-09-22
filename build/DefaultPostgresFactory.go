@@ -10,13 +10,14 @@ import (
 //	see Factory
 //	see PostgresConnection
 type DefaultPostgresFactory struct {
-	cbuild.Factory
+	*cbuild.Factory
 }
 
 //	Create a new instance of the factory.
 func NewDefaultPostgresFactory() *DefaultPostgresFactory {
 
 	c := &DefaultPostgresFactory{}
+	c.Factory = cbuild.NewFactory()
 
 	postgresConnectionDescriptor := cref.NewDescriptor("pip-services", "connection", "postgres", "*", "1.0")
 	c.RegisterType(postgresConnectionDescriptor, conn.NewPostgresConnection)

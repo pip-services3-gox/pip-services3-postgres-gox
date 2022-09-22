@@ -2,6 +2,9 @@ package connect
 
 import (
 	"context"
+	"net/url"
+	"strconv"
+
 	pgx "github.com/jackc/pgx/v4"
 	cconf "github.com/pip-services3-gox/pip-services3-commons-gox/config"
 	cdata "github.com/pip-services3-gox/pip-services3-commons-gox/data"
@@ -9,8 +12,6 @@ import (
 	crefer "github.com/pip-services3-gox/pip-services3-commons-gox/refer"
 	cauth "github.com/pip-services3-gox/pip-services3-components-gox/auth"
 	cconn "github.com/pip-services3-gox/pip-services3-components-gox/connect"
-	"net/url"
-	"strconv"
 )
 
 // PostgresConnectionResolver a helper struct  that resolves Postgres connection and credential parameters,
@@ -33,18 +34,18 @@ import (
 //		- *:discovery:*:*:1.0             (optional) IDiscovery services
 //		- *:credential-store:*:*:1.0      (optional) Credential stores to resolve credentials
 type PostgresConnectionResolver struct {
-	//The connections' resolver.
-	ConnectionResolver cconn.ConnectionResolver
-	//The credentials' resolver.
-	CredentialResolver cauth.CredentialResolver
+	// The connections' resolver.
+	ConnectionResolver *cconn.ConnectionResolver
+	// The credentials' resolver.
+	CredentialResolver *cauth.CredentialResolver
 }
 
 // NewPostgresConnectionResolver creates new connection resolver
 //	Returns: *PostgresConnectionResolver
 func NewPostgresConnectionResolver() *PostgresConnectionResolver {
 	mongoCon := PostgresConnectionResolver{}
-	mongoCon.ConnectionResolver = *cconn.NewEmptyConnectionResolver()
-	mongoCon.CredentialResolver = *cauth.NewEmptyCredentialResolver()
+	mongoCon.ConnectionResolver = cconn.NewEmptyConnectionResolver()
+	mongoCon.CredentialResolver = cauth.NewEmptyCredentialResolver()
 	return &mongoCon
 }
 

@@ -3,11 +3,12 @@ package persistence
 import (
 	"context"
 	"errors"
-	"github.com/jackc/pgx/v4"
 	"math/rand"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/jackc/pgx/v4"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 	cconf "github.com/pip-services3-gox/pip-services3-commons-gox/config"
@@ -21,9 +22,9 @@ import (
 
 type IPostgresPersistenceOverrides[T any] interface {
 	DefineSchema()
-	ConvertFromPublic(item T) map[string]any
-	ConvertToPublic(item pgx.Rows) T
-	ConvertFromPublicPartial(item map[string]any) map[string]any
+	ConvertFromPublic(item T) (map[string]any, error)
+	ConvertToPublic(item pgx.Rows) (T, error)
+	ConvertFromPublicPartial(item map[string]any) (map[string]any, error)
 }
 
 // PostgresPersistence Abstract persistence component that stores data in PostgreSQL using plain driver.
@@ -246,11 +247,11 @@ func (c *PostgresPersistence[T]) ClearSchema() {
 //	Parameters:
 //		- value an object in internal format to convert.
 //	Returns: converted object in func (c * PostgresPersistence) format.
-func (c *PostgresPersistence[T]) ConvertToPublic(rows pgx.Rows) T {
+func (c *PostgresPersistence[T]) ConvertToPublic(rows pgx.Rows) (T, error) {
 	var defaultValue T
 	values, err := rows.Values()
 	if err != nil || values == nil {
-		return defaultValue
+		return defaultValue, err
 	}
 
 	columns := rows.FieldDescriptions()
@@ -260,9 +261,15 @@ func (c *PostgresPersistence[T]) ConvertToPublic(rows pgx.Rows) T {
 	for index, column := range columns {
 		buf[(string)(column.Name)] = values[index]
 	}
-	jsonBuf, _ := cconv.JsonConverter.ToJson(buf)
-	item, _ := c.JsonConvertor.FromJson(jsonBuf)
-	return item
+
+	jsonBuf, toJsonErr := cconv.JsonConverter.ToJson(buf)
+	if toJsonErr != nil {
+		return defaultValue, toJsonErr
+	}
+
+	item, fromJsonErr := c.JsonConvertor.FromJson(jsonBuf)
+
+	return item, fromJsonErr
 
 }
 
@@ -270,20 +277,29 @@ func (c *PostgresPersistence[T]) ConvertToPublic(rows pgx.Rows) T {
 //	Parameters:
 //		- value an object in func (c * PostgresPersistence) format to convert.
 //	Returns: converted object in internal format.
-func (c *PostgresPersistence[T]) ConvertFromPublic(value T) map[string]any {
-	buf, _ := cconv.JsonConverter.ToJson(value)
-	item, _ := c.JsonMapConvertor.FromJson(buf)
-	return item
+func (c *PostgresPersistence[T]) ConvertFromPublic(value T) (map[string]any, error) {
+	buf, toJsonErr := cconv.JsonConverter.ToJson(value)
+	if toJsonErr != nil {
+		return nil, toJsonErr
+	}
+
+	item, fromJsonErr := c.JsonMapConvertor.FromJson(buf)
+
+	return item, fromJsonErr
 }
 
 // ConvertFromPublicPartial converts the given object from the public partial format.
 //	Parameters:
 //		- value the object to convert from the public partial format.
 //	Returns: the initial object.
-func (c *PostgresPersistence[T]) ConvertFromPublicPartial(value map[string]any) map[string]any {
-	buf, _ := cconv.JsonConverter.ToJson(value)
-	item, _ := c.JsonMapConvertor.FromJson(buf)
-	return item
+func (c *PostgresPersistence[T]) ConvertFromPublicPartial(value map[string]any) (map[string]any, error) {
+	buf, toJsonErr := cconv.JsonConverter.ToJson(value)
+	if toJsonErr != nil {
+		return nil, toJsonErr
+	}
+
+	item, fromJsonErr := c.JsonMapConvertor.FromJson(buf)
+	return item, fromJsonErr
 }
 
 func (c *PostgresPersistence[T]) QuoteIdentifier(value string) string {
@@ -604,7 +620,10 @@ func (c *PostgresPersistence[T]) GetPageByFilter(ctx context.Context, correlatio
 				NewError("query terminated").
 				WithCorrelationId(correlationId)
 		}
-		item := c.Overrides.ConvertToPublic(rows)
+		item, convErr := c.Overrides.ConvertToPublic(rows)
+		if convErr != nil {
+			return page, convErr
+		}
 		items = append(items, item)
 	}
 
@@ -704,7 +723,10 @@ func (c *PostgresPersistence[T]) GetListByFilter(ctx context.Context, correlatio
 				NewError("query terminated").
 				WithCorrelationId(correlationId)
 		}
-		item := c.Overrides.ConvertToPublic(rows)
+		item, convErr := c.Overrides.ConvertToPublic(rows)
+		if convErr != nil {
+			return items, convErr
+		}
 		items = append(items, item)
 	}
 
@@ -759,7 +781,10 @@ func (c *PostgresPersistence[T]) GetOneRandom(ctx context.Context, correlationId
 		return item, rows.Err()
 	}
 
-	item = c.Overrides.ConvertToPublic(rows)
+	item, convErr := c.Overrides.ConvertToPublic(rows)
+	if convErr != nil {
+		return item, convErr
+	}
 	c.Logger.Trace(ctx, correlationId, "Retrieved random item from %s", c.TableName)
 	return item, nil
 
@@ -772,8 +797,10 @@ func (c *PostgresPersistence[T]) GetOneRandom(ctx context.Context, correlationId
 //		- item              an item to be created.
 //	Returns: (optional) callback function that receives created item or error.
 func (c *PostgresPersistence[T]) Create(ctx context.Context, correlationId string, item T) (result T, err error) {
-
-	objMap := c.Overrides.ConvertFromPublic(item)
+	objMap, convErr := c.Overrides.ConvertFromPublic(item)
+	if convErr != nil {
+		return result, convErr
+	}
 	columns, values := c.GenerateColumnsAndValues(objMap)
 
 	columnsStr := c.GenerateColumns(columns)
@@ -792,7 +819,10 @@ func (c *PostgresPersistence[T]) Create(ctx context.Context, correlationId strin
 		return result, rows.Err()
 	}
 
-	result = c.Overrides.ConvertToPublic(rows)
+	result, convErr = c.Overrides.ConvertToPublic(rows)
+	if convErr != nil {
+		return result, convErr
+	}
 	id := GetObjectId[any](result)
 	c.Logger.Trace(ctx, correlationId, "Created in %s with id = %s", c.TableName, id)
 	return result, nil

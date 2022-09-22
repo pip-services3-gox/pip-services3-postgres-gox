@@ -2,9 +2,10 @@ package persistence
 
 import (
 	"context"
+	"strconv"
+
 	cerr "github.com/pip-services3-gox/pip-services3-commons-gox/errors"
 	cpersist "github.com/pip-services3-gox/pip-services3-data-gox/persistence"
-	"strconv"
 
 	cconv "github.com/pip-services3-gox/pip-services3-commons-gox/convert"
 	cdata "github.com/pip-services3-gox/pip-services3-commons-gox/data"
@@ -21,7 +22,7 @@ import (
 // In complex scenarios child classes can implement additional operations by
 // accessing c._collection and c._model properties.
 //
-//	### Configuration parameters ###
+//	Configuration parameters
 //		- collection:               (optional) PostgreSQL collection name
 //		- connection(s):
 //			- discovery_key:        (optional) a key to retrieve the connection from IDiscovery
@@ -37,10 +38,10 @@ import (
 //			- idle_timeout:         (optional) number of milliseconds a client must sit idle in the pool and not be checked out (default: 10000)
 //			- max_pool_size:        (optional) maximum number of clients the pool should contain (default: 10)
 //
-//	### References ###
-//		- \*:logger:\*:\*:1.0           (optional) ILogger components to pass log messages components to pass log messages
-//		- \*:discovery:\*:\*:1.0        (optional) IDiscovery services
-//		- \*:credential-store:\*:\*:1.0 (optional) Credential stores to resolve credentials
+//	References
+//		- *:logger:*:*:1.0           (optional) ILogger components to pass log messages components to pass log messages
+//		- *:discovery:*:*:1.0        (optional) IDiscovery services
+//		- *:credential-store:*:*:1.0 (optional) Credential stores to resolve credentials
 //	*
 //	### Example ###
 //		type DummyPostgresPersistence struct {
@@ -124,13 +125,13 @@ func (c *IdentifiablePostgresPersistence[T, K]) GetListByIds(ctx context.Context
 	params := c.GenerateParameters(ln)
 	query := "SELECT * FROM " + c.QuotedTableName() + " WHERE \"id\" IN(" + params + ")"
 
-	rows, err := c.Client.Query(ctx, query, ItemsToAnySlice[K](ids)...)
+	rows, err := c.Client.Query(ctx, query, ItemsToAnySlice(ids)...)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	items = make([]T, 0, 0)
+	items = make([]T, 0)
 	for rows.Next() {
 		if c.IsTerminated() {
 			rows.Close()
@@ -138,7 +139,10 @@ func (c *IdentifiablePostgresPersistence[T, K]) GetListByIds(ctx context.Context
 				NewError("query terminated").
 				WithCorrelationId(correlationId)
 		}
-		item := c.Overrides.ConvertToPublic(rows)
+		item, convErr := c.Overrides.ConvertToPublic(rows)
+		if convErr != nil {
+			return items, convErr
+		}
 		items = append(items, item)
 	}
 
@@ -172,7 +176,7 @@ func (c *IdentifiablePostgresPersistence[T, K]) GetOneById(ctx context.Context, 
 	values, err := rows.Values()
 	if err == nil && len(values) > 0 {
 		c.Logger.Trace(ctx, correlationId, "Retrieved from %s with id = %s", c.TableName, id)
-		return c.Overrides.ConvertToPublic(rows), nil
+		return c.Overrides.ConvertToPublic(rows)
 	}
 	c.Logger.Trace(ctx, correlationId, "Nothing found from %s with id = %s", c.TableName, id)
 	return item, err
@@ -199,7 +203,11 @@ func (c *IdentifiablePostgresPersistence[T, K]) Create(ctx context.Context, corr
 //		- item              an item to be set.
 //	Returns: (optional)  updated item or error.
 func (c *IdentifiablePostgresPersistence[T, K]) Set(ctx context.Context, correlationId string, item T) (result T, err error) {
-	objMap := c.Overrides.ConvertFromPublic(item)
+	objMap, convErr := c.Overrides.ConvertFromPublic(item)
+	if convErr != nil {
+		return result, convErr
+	}
+
 	GenerateObjectMapIdIfNotExists(objMap)
 
 	columns, values := c.GenerateColumnsAndValues(objMap)
@@ -226,7 +234,10 @@ func (c *IdentifiablePostgresPersistence[T, K]) Set(ctx context.Context, correla
 
 	_values, err := rows.Values()
 	if err == nil && len(_values) > 0 {
-		result = c.Overrides.ConvertToPublic(rows)
+		result, convErr = c.Overrides.ConvertToPublic(rows)
+		if convErr != nil {
+			return result, convErr
+		}
 		c.Logger.Trace(ctx, correlationId, "Set in %s with id = %s", c.TableName, id)
 		return result, nil
 	}
@@ -241,7 +252,10 @@ func (c *IdentifiablePostgresPersistence[T, K]) Set(ctx context.Context, correla
 //		- item              an item to be updated.
 //	Returns          (optional)  updated item or error.
 func (c *IdentifiablePostgresPersistence[T, K]) Update(ctx context.Context, correlationId string, item T) (result T, err error) {
-	objMap := c.Overrides.ConvertFromPublic(item)
+	objMap, convErr := c.Overrides.ConvertFromPublic(item)
+	if convErr != nil {
+		return result, convErr
+	}
 	columns, values := c.GenerateColumnsAndValues(objMap)
 	paramsStr := c.GenerateSetParameters(columns)
 	id := cpersist.GetObjectId(objMap)
@@ -261,7 +275,10 @@ func (c *IdentifiablePostgresPersistence[T, K]) Update(ctx context.Context, corr
 
 	_values, err := rows.Values()
 	if err == nil && len(_values) > 0 {
-		result = c.Overrides.ConvertToPublic(rows)
+		result, convErr = c.Overrides.ConvertToPublic(rows)
+		if convErr != nil {
+			return result, convErr
+		}
 		c.Logger.Trace(ctx, correlationId, "Updated in %s with id = %s", c.TableName, id)
 		return result, nil
 	}
@@ -276,7 +293,10 @@ func (c *IdentifiablePostgresPersistence[T, K]) Update(ctx context.Context, corr
 //		- data              a map with fields to be updated.
 //	Returns: updated item or error.
 func (c *IdentifiablePostgresPersistence[T, K]) UpdatePartially(ctx context.Context, correlationId string, id K, data cdata.AnyValueMap) (result T, err error) {
-	objMap := c.Overrides.ConvertFromPublicPartial(data.Value())
+	objMap, convErr := c.Overrides.ConvertFromPublicPartial(data.Value())
+	if convErr != nil {
+		return result, convErr
+	}
 	columns, values := c.GenerateColumnsAndValues(objMap)
 	paramsStr := c.GenerateSetParameters(columns)
 	values = append(values, id)
@@ -296,7 +316,10 @@ func (c *IdentifiablePostgresPersistence[T, K]) UpdatePartially(ctx context.Cont
 
 	_values, err := rows.Values()
 	if err == nil && len(_values) > 0 {
-		result = c.Overrides.ConvertToPublic(rows)
+		result, convErr = c.Overrides.ConvertToPublic(rows)
+		if convErr != nil {
+			return result, convErr
+		}
 		c.Logger.Trace(ctx, correlationId, "Updated partially in %s with id = %s", c.TableName, id)
 		return result, nil
 	}
@@ -324,7 +347,10 @@ func (c *IdentifiablePostgresPersistence[T, K]) DeleteById(ctx context.Context, 
 
 	_values, err := rows.Values()
 	if err == nil && len(_values) > 0 {
-		result = c.Overrides.ConvertToPublic(rows)
+		result, convErr := c.Overrides.ConvertToPublic(rows)
+		if convErr != nil {
+			return result, convErr
+		}
 		c.Logger.Trace(ctx, correlationId, "Deleted from %s with id = %s", c.TableName, id)
 		return result, nil
 	}
