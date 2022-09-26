@@ -45,12 +45,12 @@ import (
 //
 //	Example:
 //		type DummyJsonPostgresPersistence struct {
-//			persist.IdentifiableJsonPostgresPersistence[fixtures.Dummy, string]
+//			*persist.IdentifiableJsonPostgresPersistence[fixtures.Dummy, string]
 //		}
 //
 //		func NewDummyJsonPostgresPersistence() *DummyJsonPostgresPersistence {
 //			c := &DummyJsonPostgresPersistence{}
-//			c.IdentifiableJsonPostgresPersistence = *persist.InheritIdentifiableJsonPostgresPersistence[fixtures.Dummy, string](c, "dummies_json")
+//			c.IdentifiableJsonPostgresPersistence = persist.InheritIdentifiableJsonPostgresPersistence[fixtures.Dummy, string](c, "dummies_json")
 //			return c
 //		}
 //

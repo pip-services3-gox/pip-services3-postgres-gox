@@ -14,7 +14,7 @@
 
 
 
-<script>var goVersion = "go1.18.5";</script>
+<script>var goVersion = "go1.18.6";</script>
 <script src="../../lib/godoc/godocs.js" defer></script>
 </head>
 <body>
@@ -200,7 +200,7 @@
 		
 			
 			
-			<h2 id="PostgresConnection">type <a href="http://localhost:6060/src/connect/PostgresConnection.go?s=1785:2175#L29">PostgresConnection</a>
+			<h2 id="PostgresConnection">type <a href="http://localhost:6060/src/connect/PostgresConnection.go?s=1800:2204#L30">PostgresConnection</a>
 				<a class="permalink" href="index.html#PostgresConnection">&#xb6;</a>
 				
 				
@@ -212,7 +212,7 @@ PostgresConnection is a PostgreSQL connection using plain driver.
 By defining a connection and sharing it through multiple persistence components
 you can reduce number of used database connections.
 </p>
-<pre>### Configuration parameters ###
+<pre>Configuration parameters
 	- connection(s):
 		- discovery_key:        (optional) a key to retrieve the connection from IDiscovery
 		- host:                 host name or IP address
@@ -227,10 +227,10 @@ you can reduce number of used database connections.
 		- idle_timeout:         (optional) number of milliseconds a client must sit idle in the pool and not be checked out (default: 10000)
 		- max_pool_size:        (optional) maximum number of clients the pool should contain (default: 10)
 
-### References ###
-	- \*:logger:\*:\*:1.0           (optional) ILogger components to pass log messages
-	- \*:discovery:\*:\*:1.0        (optional) IDiscovery services
-	- \*:credential-store:\*:\*:1.0 (optional) Credential stores to resolve credentials
+References
+	- *:logger:*:*:1.0           (optional) ILogger components to pass log messages
+	- *:discovery:*:*:1.0        (optional) IDiscovery services
+	- *:credential-store:*:*:1.0 (optional) Credential stores to resolve credentials
 </pre>
 
 			<pre>type PostgresConnection struct {
@@ -259,7 +259,7 @@ you can reduce number of used database connections.
 
 			
 				
-				<h3 id="NewPostgresConnection">func <a href="http://localhost:6060/src/connect/PostgresConnection.go?s=2380:2428#L53">NewPostgresConnection</a>
+				<h3 id="NewPostgresConnection">func <a href="http://localhost:6060/src/connect/PostgresConnection.go?s=2419:2467#L54">NewPostgresConnection</a>
 					<a class="permalink" href="index.html#NewPostgresConnection">&#xb6;</a>
 					
 					
@@ -275,7 +275,7 @@ NewPostgresConnection creates a new instance of the connection component.
 
 			
 				
-				<h3 id="PostgresConnection.Close">func (*PostgresConnection) <a href="http://localhost:6060/src/connect/PostgresConnection.go?s=5862:5945#L157">Close</a>
+				<h3 id="PostgresConnection.Close">func (*PostgresConnection) <a href="http://localhost:6060/src/connect/PostgresConnection.go?s=6005:6088#L158">Close</a>
 					<a class="permalink" href="index.html#PostgresConnection.Close">&#xb6;</a>
 					
 					
@@ -295,7 +295,7 @@ Returns: error or nil no errors occurred
 				
 			
 				
-				<h3 id="PostgresConnection.Configure">func (*PostgresConnection) <a href="http://localhost:6060/src/connect/PostgresConnection.go?s=3026:3113#L72">Configure</a>
+				<h3 id="PostgresConnection.Configure">func (*PostgresConnection) <a href="http://localhost:6060/src/connect/PostgresConnection.go?s=3084:3171#L73">Configure</a>
 					<a class="permalink" href="index.html#PostgresConnection.Configure">&#xb6;</a>
 					
 					
@@ -314,7 +314,7 @@ Configure component by passing configuration parameters.
 				
 			
 				
-				<h3 id="PostgresConnection.GetConnection">func (*PostgresConnection) <a href="http://localhost:6060/src/connect/PostgresConnection.go?s=6162:6220#L168">GetConnection</a>
+				<h3 id="PostgresConnection.GetConnection">func (*PostgresConnection) <a href="http://localhost:6060/src/connect/PostgresConnection.go?s=6316:6374#L169">GetConnection</a>
 					<a class="permalink" href="index.html#PostgresConnection.GetConnection">&#xb6;</a>
 					
 					
@@ -326,7 +326,7 @@ Configure component by passing configuration parameters.
 				
 			
 				
-				<h3 id="PostgresConnection.GetDatabaseName">func (*PostgresConnection) <a href="http://localhost:6060/src/connect/PostgresConnection.go?s=6247:6300#L172">GetDatabaseName</a>
+				<h3 id="PostgresConnection.GetDatabaseName">func (*PostgresConnection) <a href="http://localhost:6060/src/connect/PostgresConnection.go?s=6405:6458#L173">GetDatabaseName</a>
 					<a class="permalink" href="index.html#PostgresConnection.GetDatabaseName">&#xb6;</a>
 					
 					
@@ -338,7 +338,7 @@ Configure component by passing configuration parameters.
 				
 			
 				
-				<h3 id="PostgresConnection.IsOpen">func (*PostgresConnection) <a href="http://localhost:6060/src/connect/PostgresConnection.go?s=3739:3781#L89">IsOpen</a>
+				<h3 id="PostgresConnection.IsOpen">func (*PostgresConnection) <a href="http://localhost:6060/src/connect/PostgresConnection.go?s=3814:3856#L90">IsOpen</a>
 					<a class="permalink" href="index.html#PostgresConnection.IsOpen">&#xb6;</a>
 					
 					
@@ -355,7 +355,7 @@ IsOpen checks if the component is opened.
 				
 			
 				
-				<h3 id="PostgresConnection.Open">func (*PostgresConnection) <a href="http://localhost:6060/src/connect/PostgresConnection.go?s=4014:4096#L98">Open</a>
+				<h3 id="PostgresConnection.Open">func (*PostgresConnection) <a href="http://localhost:6060/src/connect/PostgresConnection.go?s=4098:4180#L99">Open</a>
 					<a class="permalink" href="index.html#PostgresConnection.Open">&#xb6;</a>
 					
 					
@@ -375,7 +375,7 @@ Parameters:
 				
 			
 				
-				<h3 id="PostgresConnection.SetReferences">func (*PostgresConnection) <a href="http://localhost:6060/src/connect/PostgresConnection.go?s=3432:3524#L82">SetReferences</a>
+				<h3 id="PostgresConnection.SetReferences">func (*PostgresConnection) <a href="http://localhost:6060/src/connect/PostgresConnection.go?s=3500:3592#L83">SetReferences</a>
 					<a class="permalink" href="index.html#PostgresConnection.SetReferences">&#xb6;</a>
 					
 					
@@ -396,7 +396,7 @@ SetReferences references to dependent components.
 		
 			
 			
-			<h2 id="PostgresConnectionResolver">type <a href="http://localhost:6060/src/connect/PostgresConnectionResolver.go?s=1569:1761#L25">PostgresConnectionResolver</a>
+			<h2 id="PostgresConnectionResolver">type <a href="http://localhost:6060/src/connect/PostgresConnectionResolver.go?s=1605:1806#L26">PostgresConnectionResolver</a>
 				<a class="permalink" href="index.html#PostgresConnectionResolver">&#xb6;</a>
 				
 				
@@ -424,10 +424,10 @@ References:
 </pre>
 
 			<pre>type PostgresConnectionResolver struct {
-    <span class="comment">//The connections&#39; resolver.</span>
-<span id="PostgresConnectionResolver.ConnectionResolver"></span>    ConnectionResolver <a href="http://localhost:6060/pkg/github.com/pip-services3-gox/pip-services3-components-gox/connect/">cconn</a>.<a href="http://localhost:6060/pkg/github.com/pip-services3-gox/pip-services3-components-gox/connect/#ConnectionResolver">ConnectionResolver</a>
-    <span class="comment">//The credentials&#39; resolver.</span>
-<span id="PostgresConnectionResolver.CredentialResolver"></span>    CredentialResolver <a href="http://localhost:6060/pkg/github.com/pip-services3-gox/pip-services3-components-gox/auth/">cauth</a>.<a href="http://localhost:6060/pkg/github.com/pip-services3-gox/pip-services3-components-gox/auth/#CredentialResolver">CredentialResolver</a>
+    <span class="comment">// The connections&#39; resolver.</span>
+<span id="PostgresConnectionResolver.ConnectionResolver"></span>    ConnectionResolver *<a href="http://localhost:6060/pkg/github.com/pip-services3-gox/pip-services3-components-gox/connect/">cconn</a>.<a href="http://localhost:6060/pkg/github.com/pip-services3-gox/pip-services3-components-gox/connect/#ConnectionResolver">ConnectionResolver</a>
+    <span class="comment">// The credentials&#39; resolver.</span>
+<span id="PostgresConnectionResolver.CredentialResolver"></span>    CredentialResolver *<a href="http://localhost:6060/pkg/github.com/pip-services3-gox/pip-services3-components-gox/auth/">cauth</a>.<a href="http://localhost:6060/pkg/github.com/pip-services3-gox/pip-services3-components-gox/auth/#CredentialResolver">CredentialResolver</a>
 }
 </pre>
 
@@ -441,7 +441,7 @@ References:
 
 			
 				
-				<h3 id="NewPostgresConnectionResolver">func <a href="http://localhost:6060/src/connect/PostgresConnectionResolver.go?s=1868:1932#L34">NewPostgresConnectionResolver</a>
+				<h3 id="NewPostgresConnectionResolver">func <a href="http://localhost:6060/src/connect/PostgresConnectionResolver.go?s=1917:1981#L35">NewPostgresConnectionResolver</a>
 					<a class="permalink" href="index.html#NewPostgresConnectionResolver">&#xb6;</a>
 					
 					
@@ -459,7 +459,7 @@ NewPostgresConnectionResolver creates new connection resolver
 
 			
 				
-				<h3 id="PostgresConnectionResolver.Configure">func (*PostgresConnectionResolver) <a href="http://localhost:6060/src/connect/PostgresConnectionResolver.go?s=2316:2411#L45">Configure</a>
+				<h3 id="PostgresConnectionResolver.Configure">func (*PostgresConnectionResolver) <a href="http://localhost:6060/src/connect/PostgresConnectionResolver.go?s=2374:2469#L46">Configure</a>
 					<a class="permalink" href="index.html#PostgresConnectionResolver.Configure">&#xb6;</a>
 					
 					
@@ -478,7 +478,7 @@ Configure is configures component by passing configuration parameters.
 				
 			
 				
-				<h3 id="PostgresConnectionResolver.Resolve">func (*PostgresConnectionResolver) <a href="http://localhost:6060/src/connect/PostgresConnectionResolver.go?s=7194:7305#L239">Resolve</a>
+				<h3 id="PostgresConnectionResolver.Resolve">func (*PostgresConnectionResolver) <a href="http://localhost:6060/src/connect/PostgresConnectionResolver.go?s=7446:7557#L240">Resolve</a>
 					<a class="permalink" href="index.html#PostgresConnectionResolver.Resolve">&#xb6;</a>
 					
 					
@@ -498,7 +498,7 @@ Returns: uri string, err error resolved URI and error, if this occured.
 				
 			
 				
-				<h3 id="PostgresConnectionResolver.SetReferences">func (*PostgresConnectionResolver) <a href="http://localhost:6060/src/connect/PostgresConnectionResolver.go?s=2694:2796#L54">SetReferences</a>
+				<h3 id="PostgresConnectionResolver.SetReferences">func (*PostgresConnectionResolver) <a href="http://localhost:6060/src/connect/PostgresConnectionResolver.go?s=2761:2863#L55">SetReferences</a>
 					<a class="permalink" href="index.html#PostgresConnectionResolver.SetReferences">&#xb6;</a>
 					
 					
@@ -528,7 +528,7 @@ Parameters:
 
 
 <div id="footer">
-Build version go1.18.5.<br>
+Build version go1.18.6.<br>
 Except as <a href="https://developers.google.com/site-policies#restrictions">noted</a>,
 the content of this page is licensed under the
 Creative Commons Attribution 3.0 License,

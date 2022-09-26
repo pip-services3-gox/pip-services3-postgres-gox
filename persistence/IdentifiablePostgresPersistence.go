@@ -45,12 +45,12 @@ import (
 //	*
 //	### Example ###
 //		type DummyPostgresPersistence struct {
-//			persist.IdentifiablePostgresPersistence[fixtures.Dummy, string]
+//			*persist.IdentifiablePostgresPersistence[fixtures.Dummy, string]
 //		}
 //
 //		func NewDummyPostgresPersistence() *DummyPostgresPersistence {
 //			c := &DummyPostgresPersistence{}
-//			c.IdentifiablePostgresPersistence = *persist.InheritIdentifiablePostgresPersistence[fixtures.Dummy, string](c, "dummies")
+//			c.IdentifiablePostgresPersistence = persist.InheritIdentifiablePostgresPersistence[fixtures.Dummy, string](c, "dummies")
 //			return c
 //		}
 //

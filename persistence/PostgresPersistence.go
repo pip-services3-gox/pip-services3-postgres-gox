@@ -34,7 +34,7 @@ type IPostgresPersistenceOverrides[T any] interface {
 // over the data items must be implemented in child classes by
 // accessing c._db or c._collection properties.
 //
-//	### Configuration parameters ###
+//	Configuration parameters
 //		- collection:                  (optional) PostgreSQL collection name
 //		- schema:                  	   (optional) PostgreSQL schema, default "public"
 //		- connection(s):
@@ -51,10 +51,10 @@ type IPostgresPersistenceOverrides[T any] interface {
 //			- idle_timeout:         (optional) number of milliseconds a client must sit idle in the pool and not be checked out (default: 10000)
 //			- max_pool_size:        (optional) maximum number of clients the pool should contain (default: 10)
 //
-//	### References ###
-//		- \*:logger:\*:\*:1.0           (optional) ILogger components to pass log messages
-//		- \*:discovery:\*:\*:1.0        (optional) IDiscovery services
-//		- \*:credential-store:\*:\*:1.0 (optional) Credential stores to resolve credentials
+//	References:
+//		- *:logger:*:*:1.0           (optional) ILogger components to pass log messages
+//		- *:discovery:*:*:1.0        (optional) IDiscovery services
+//		- *:credential-store:*:*:1.0 (optional) Credential stores to resolve credentials
 //
 type PostgresPersistence[T any] struct {
 	Overrides IPostgresPersistenceOverrides[T]
