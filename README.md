@@ -3,9 +3,9 @@
 This module is a part of the [Pip.Services](http://pipservices.org) polyglot microservices toolkit. It provides a set of components to implement PostgreSQL persistence.
 
 The module contains the following packages:
-- [**Build**](https://godoc.org/github.com/pip-services3-gox/pip-services3-postgres-gox/build) - Factory to create PostreSQL persistence components.
-- [**Connect**](https://godoc.org/github.com/pip-services3-gox/pip-services3-postgres-gox/connect) - Connection component to configure PostgreSQL connection to database.
-- [**Persistence**](https://godoc.org/github.com/pip-services3-gox/pip-services3-postgres-gox/persistence) - abstract persistence components to perform basic CRUD operations.
+- **Build** - Factory to create PostreSQL persistence components.
+- **Connect** - Connection component to configure PostgreSQL connection to database.
+- **Persistence** - abstract persistence components to perform basic CRUD operations.
 
 <a name="links"></a> Quick links:
 
