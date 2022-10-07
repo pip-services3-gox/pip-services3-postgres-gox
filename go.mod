@@ -4,14 +4,15 @@ go 1.18
 
 require (
 	github.com/jackc/pgx/v4 v4.17.2
-	github.com/pip-services3-gox/pip-services3-commons-gox v1.0.5
-	github.com/pip-services3-gox/pip-services3-components-gox v1.0.6
-	github.com/pip-services3-gox/pip-services3-data-gox v1.0.6
+	github.com/pip-services3-gox/pip-services3-commons-gox v1.0.7
+	github.com/pip-services3-gox/pip-services3-components-gox v1.0.7
+	github.com/pip-services3-gox/pip-services3-data-gox v1.0.7
 	github.com/stretchr/testify v1.8.0
 )
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/google/uuid v1.3.0 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgconn v1.13.0 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect
