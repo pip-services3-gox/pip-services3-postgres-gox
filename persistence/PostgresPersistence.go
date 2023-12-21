@@ -55,7 +55,6 @@ type IPostgresPersistenceOverrides[T any] interface {
 //		- *:logger:*:*:1.0           (optional) ILogger components to pass log messages
 //		- *:discovery:*:*:1.0        (optional) IDiscovery services
 //		- *:credential-store:*:*:1.0 (optional) Credential stores to resolve credentials
-//
 type PostgresPersistence[T any] struct {
 	Overrides IPostgresPersistenceOverrides[T]
 	// Defines general JSON convertors
@@ -94,6 +93,7 @@ type PostgresPersistence[T any] struct {
 }
 
 // InheritPostgresPersistence creates a new instance of the persistence component.
+//
 //	Parameters:
 //		- ctx context.Context
 //		- overrides References to override virtual methods
@@ -127,6 +127,7 @@ func InheritPostgresPersistence[T any](overrides IPostgresPersistenceOverrides[T
 }
 
 // Configure component by passing configuration parameters.
+//
 //	Parameters:
 //		- ctx context.Context
 //		- config configuration parameters to be set.
@@ -143,6 +144,7 @@ func (c *PostgresPersistence[T]) Configure(ctx context.Context, config *cconf.Co
 }
 
 // SetReferences to dependent components.
+//
 //	Parameters:
 //		- ctx context.Context
 //		- references references to locate the component dependencies.
@@ -184,6 +186,7 @@ func (c *PostgresPersistence[T]) createConnection(ctx context.Context) *conn.Pos
 }
 
 // EnsureIndex adds index definition to create it on opening
+//
 //	Parameters:
 //		- keys index keys (fields)
 //		- options index options
@@ -232,8 +235,9 @@ func (c *PostgresPersistence[T]) DefineSchema() {
 }
 
 // EnsureSchema adds a statement to schema definition
-//	Parameters:
-//   - schemaStatement a statement to be added to the schema
+//
+//		Parameters:
+//	  - schemaStatement a statement to be added to the schema
 func (c *PostgresPersistence[T]) EnsureSchema(schemaStatement string) {
 	c.schemaStatements = append(c.schemaStatements, schemaStatement)
 }
@@ -244,6 +248,7 @@ func (c *PostgresPersistence[T]) ClearSchema() {
 }
 
 // ConvertToPublic converts object value from internal to func (c * PostgresPersistence) format.
+//
 //	Parameters:
 //		- value an object in internal format to convert.
 //	Returns: converted object in func (c * PostgresPersistence) format.
@@ -274,6 +279,7 @@ func (c *PostgresPersistence[T]) ConvertToPublic(rows pgx.Rows) (T, error) {
 }
 
 // ConvertFromPublic сonvert object value from func (c * PostgresPersistence) to internal format.
+//
 //	Parameters:
 //		- value an object in func (c * PostgresPersistence) format to convert.
 //	Returns: converted object in internal format.
@@ -289,6 +295,7 @@ func (c *PostgresPersistence[T]) ConvertFromPublic(value T) (map[string]any, err
 }
 
 // ConvertFromPublicPartial converts the given object from the public partial format.
+//
 //	Parameters:
 //		- value the object to convert from the public partial format.
 //	Returns: the initial object.
@@ -321,12 +328,14 @@ func (c *PostgresPersistence[T]) QuotedTableName() string {
 }
 
 // IsOpen checks if the component is opened.
+//
 //	Returns: true if the component has been opened and false otherwise.
 func (c *PostgresPersistence[T]) IsOpen() bool {
 	return c.opened
 }
 
 // IsTerminated checks if the wee need to terminate process before close component.
+//
 //	Returns: true if you need terminate your processes.
 func (c *PostgresPersistence[T]) IsTerminated() bool {
 	select {
@@ -341,6 +350,7 @@ func (c *PostgresPersistence[T]) IsTerminated() bool {
 }
 
 // Open the component.
+//
 //	Parameters:
 //		- ctx context.Context
 //		- correlationId (optional) transaction id to trace execution through call chain.
@@ -394,6 +404,7 @@ func (c *PostgresPersistence[T]) Open(ctx context.Context, correlationId string)
 }
 
 // Close component and frees used resources.
+//
 //	Parameters:
 //		- ctx context.Context
 //		- correlationId (optional) transaction id to trace execution through call chain.
@@ -422,6 +433,7 @@ func (c *PostgresPersistence[T]) Close(ctx context.Context, correlationId string
 }
 
 // Clear component state.
+//
 //	Parameters:
 //		- ctx context.Context
 //		- correlationId 	(optional) transaction id to trace execution through call chain.
@@ -438,7 +450,15 @@ func (c *PostgresPersistence[T]) Clear(ctx context.Context, correlationId string
 			NewConnectionError(correlationId, "CONNECT_FAILED", "Connection to postgres failed").
 			WithCause(err)
 	}
-	rows.Close()
+
+	defer rows.Close()
+
+	for rows.Next() {
+		if rows.Err() != nil {
+			return rows.Err()
+		}
+	}
+
 	return nil
 }
 
@@ -462,7 +482,13 @@ func (c *PostgresPersistence[T]) CreateSchema(ctx context.Context, correlationId
 			c.Logger.Error(ctx, correlationId, err, "Failed to autocreate database object")
 			return err
 		}
-		result.Close()
+		defer result.Close()
+
+		for result.Next() {
+			if result.Err() != nil {
+				return result.Err()
+			}
+		}
 	}
 	return nil
 }
@@ -491,6 +517,7 @@ func (c *PostgresPersistence[T]) checkTableExists(ctx context.Context) (bool, er
 }
 
 // GenerateColumns generates a list of column names to use in SQL statements like: "column1,column2,column3"
+//
 //	Parameters:
 //		- columns an array with column values
 //	Returns: a generated list of column names
@@ -511,6 +538,7 @@ func (c *PostgresPersistence[T]) GenerateColumns(columns []string) string {
 }
 
 // GenerateParameters generates a list of value parameters to use in SQL statements like: "$1,$2,$3"
+//
 //	Parameters:
 //		- values an array with column values or a key-value map
 //	Returns: a generated list of value parameters
@@ -532,6 +560,7 @@ func (c *PostgresPersistence[T]) GenerateParameters(valuesCount int) string {
 }
 
 // GenerateSetParameters generates a list of column sets to use in UPDATE statements like: column1=$1,column2=$2
+//
 //	Parameters:
 //		- values an array with column values or a key-value map
 //	Returns: a generated list of column sets
@@ -553,6 +582,7 @@ func (c *PostgresPersistence[T]) GenerateSetParameters(columns []string) string 
 }
 
 // GenerateColumnsAndValues generates a list of column parameters
+//
 //	Parameters:
 //		- values an array with column values or a key-value map
 //	Returns: a generated list of column values
@@ -574,6 +604,7 @@ func (c *PostgresPersistence[T]) GenerateColumnsAndValues(objMap map[string]any)
 // GetPageByFilter gets a page of data items retrieved by a given filter and sorted according to sort parameters.
 // This method shall be called by a func (c * PostgresPersistence) getPageByFilter method from child class that
 // receives FilterParams and converts them into a filter function.
+//
 //	Parameters:
 //		- ctx context.Context
 //		- correlationId     (optional) transaction id to trace execution through call chain.
@@ -646,6 +677,7 @@ func (c *PostgresPersistence[T]) GetPageByFilter(ctx context.Context, correlatio
 // GetCountByFilter gets a number of data items retrieved by a given filter.
 // This method shall be called by a func (c * PostgresPersistence) getCountByFilter method from child class that
 // receives FilterParams and converts them into a filter function.
+//
 //	Parameters:
 //		- ctx context.Context
 //		- correlationId     (optional) transaction id to trace execution through call chain.
@@ -684,6 +716,7 @@ func (c *PostgresPersistence[T]) GetCountByFilter(ctx context.Context, correlati
 // GetListByFilter gets a list of data items retrieved by a given filter and sorted according to sort parameters.
 // This method shall be called by a func (c * PostgresPersistence) getListByFilter method from child class that
 // receives FilterParams and converts them into a filter function.
+//
 //	Parameters:
 //		- ctx context.Context
 //		- correlationId    (optional) transaction id to trace execution through call chain.
@@ -740,6 +773,7 @@ func (c *PostgresPersistence[T]) GetListByFilter(ctx context.Context, correlatio
 // GetOneRandom gets a random item from items that match to a given filter.
 // This method shall be called by a func (c * PostgresPersistence) getOneRandom method from child class that
 // receives FilterParams and converts them into a filter function.
+//
 //	Parameters:
 //		- ctx context.Context
 //		- correlationId     (optional) transaction id to trace execution through call chain.
@@ -791,6 +825,7 @@ func (c *PostgresPersistence[T]) GetOneRandom(ctx context.Context, correlationId
 }
 
 // Create creates a data item.
+//
 //	Parameters:
 //		- ctx context.Context
 //		- correlation_id    (optional) transaction id to trace execution through call chain.
@@ -831,6 +866,7 @@ func (c *PostgresPersistence[T]) Create(ctx context.Context, correlationId strin
 // DeleteByFilter deletes data items that match to a given filter.
 // This method shall be called by a func (c * PostgresPersistence) deleteByFilter method from child class that
 // receives FilterParams and converts them into a filter function.
+//
 //	Parameters:
 //		- ctx context.Context
 //		- correlationId     (optional) transaction id to trace execution through call chain.
