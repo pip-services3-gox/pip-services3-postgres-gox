@@ -450,13 +450,10 @@ func (c *PostgresPersistence[T]) Clear(ctx context.Context, correlationId string
 			NewConnectionError(correlationId, "CONNECT_FAILED", "Connection to postgres failed").
 			WithCause(err)
 	}
+	rows.Close()
 
-	defer rows.Close()
-
-	for rows.Next() {
-		if rows.Err() != nil {
-			return rows.Err()
-		}
+	if rows.Err() != nil {
+		return rows.Err()
 	}
 
 	return nil
@@ -482,12 +479,10 @@ func (c *PostgresPersistence[T]) CreateSchema(ctx context.Context, correlationId
 			c.Logger.Error(ctx, correlationId, err, "Failed to autocreate database object")
 			return err
 		}
-		defer result.Close()
+		result.Close()
 
-		for result.Next() {
-			if result.Err() != nil {
-				return result.Err()
-			}
+		if result.Err() != nil {
+			return result.Err()
 		}
 	}
 	return nil
